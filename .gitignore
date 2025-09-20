@@ -1,0 +1,49 @@
+# 通用忽略
+.DS_Store
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+node_modules/
+dist/
+build/
+target/
+.env
+.env.local
+*.env
+
+# 项目特定忽略
+Data_server/node_modules/
+Server/target/
+web/node_modules/
+web/dist/
+
+# 系统文件
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# 开发工具
+.sass-cache/
+.stylelintcache
+
+# 测试相关
+coverage/
+.nyc_output/
+
+# 打包输出
+*.zip
+*.tar.gz
+*.rar
+
+# 编辑器
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
