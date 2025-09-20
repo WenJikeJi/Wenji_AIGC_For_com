@@ -164,11 +164,13 @@ login: async (email, password, verificationCode, rememberMe, captchaId) => {
       console.log('加密后密码:', encryptedPwd);
       
       // 根据后端API文档，使用正确的端点路径/api/auth/login
-      // 调整参数以匹配后端要求
+      // 调整参数以匹配后端要求，确保发送完整参数
       return await request('api/auth/login', 'POST', {
         account: email, // Java后端期望account参数
         encryptedPassword: encryptedPwd, // Java后端期望encryptedPassword参数
-        role: 0 // 默认使用主账号角色登录
+        role: 0, // 默认使用主账号角色登录
+        verificationCode: verificationCode,
+        captchaId: captchaId
       }, false);
     } catch (rsaError) {
       console.warn('RSA加密失败，使用备用加密方案:', rsaError);
