@@ -8,6 +8,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -19,15 +27,27 @@ public class LogController {
     @Autowired
     private LogService logService;
     
-    // 获取操作日志列表接口
+    @Operation(
+            summary = "获取操作日志列表",
+            description = "获取用户的操作日志列表，支持分页和多种条件筛选",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"日志管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"total\": 100, \"page\": 1, \"size\": 10, \"data\": [{\"id\": 1, \"userId\": 1, \"username\": \"张三\", \"operation\": \"登录\", \"ip\": \"192.168.1.1\", \"address\": \"北京市\", \"result\": \"success\", \"createTime\": \"2023-01-10T15:30:00\"}, ...]}"))),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录")
+    })
     @GetMapping
     public ResponseEntity<?> getOperationLogs(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String operation,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @Parameter(description = "页码，默认为1", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数，默认为10", example = "10") @RequestParam(defaultValue = "10") Integer size,
+            @Parameter(description = "用户ID，可选，用于筛选特定用户的日志", example = "1") @RequestParam(required = false) Long userId,
+            @Parameter(description = "操作类型，可选，用于筛选特定操作类型的日志", example = "登录") @RequestParam(required = false) String operation,
+            @Parameter(description = "开始时间，可选，用于筛选指定时间范围内的日志", example = "2023-01-01T00:00:00") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @Parameter(description = "结束时间，可选，用于筛选指定时间范围内的日志", example = "2023-01-31T23:59:59") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
             HttpServletRequest request) {
         try {
             // 获取当前登录用户信息
@@ -64,12 +84,24 @@ public class LogController {
         }
     }
     
-    // 根据操作类型获取日志接口
+    @Operation(
+            summary = "根据操作类型获取日志",
+            description = "根据操作类型获取用户的操作日志列表，支持分页",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"日志管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"total\": 50, \"page\": 1, \"size\": 10, \"data\": [{\"id\": 1, \"userId\": 1, \"username\": \"张三\", \"operation\": \"登录\", \"ip\": \"192.168.1.1\", \"address\": \"北京市\", \"result\": \"success\", \"createTime\": \"2023-01-10T15:30:00\"}, ...]}"))),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录")
+    })
     @GetMapping("/by-operation")
     public ResponseEntity<?> getLogsByOperationType(
-            @RequestParam String operationType,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
+            @Parameter(description = "操作类型，必填", example = "登录") @RequestParam String operationType,
+            @Parameter(description = "页码，默认为1", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数，默认为10", example = "10") @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
         try {
             // 获取当前登录用户信息
@@ -100,11 +132,23 @@ public class LogController {
         }
     }
     
-    // 获取登录日志接口
+    @Operation(
+            summary = "获取登录日志",
+            description = "获取用户的登录日志列表，支持分页",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"日志管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"total\": 30, \"page\": 1, \"size\": 10, \"data\": [{\"id\": 1, \"userId\": 1, \"username\": \"张三\", \"operation\": \"登录\", \"ip\": \"192.168.1.1\", \"address\": \"北京市\", \"result\": \"success\", \"createTime\": \"2023-01-10T15:30:00\"}, ...]}"))),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录")
+    })
     @GetMapping("/login")
     public ResponseEntity<?> getLoginLogs(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
+            @Parameter(description = "页码，默认为1", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数，默认为10", example = "10") @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
         try {
             // 获取当前登录用户信息

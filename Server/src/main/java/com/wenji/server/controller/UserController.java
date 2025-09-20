@@ -7,6 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
@@ -17,12 +25,25 @@ public class UserController {
     @Autowired
     private UserService userService;
     
-    // 获取用户列表接口
+    @Operation(
+            summary = "获取用户列表",
+            description = "主账号可以查看所有用户列表，子账号无权限查看",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"用户管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"total\": 2, \"page\": 1, \"size\": 10, \"data\": [{\"id\": 1, \"username\": \"张三\", \"account\": \"zhangsan\", \"role\": 0, \"status\": 1}, {\"id\": 2, \"username\": \"李四\", \"account\": \"lisi\", \"role\": 1, \"status\": 1}]}"))),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
     @GetMapping
     public ResponseEntity<?> getUserList(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) Long parentId,
+            @Parameter(description = "页码，默认为1", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数，默认为10", example = "10") @RequestParam(defaultValue = "10") Integer size,
+            @Parameter(description = "父账号ID，可选，用于筛选特定主账号下的子账号", example = "1") @RequestParam(required = false) Long parentId,
             HttpServletRequest request) {
         try {
             // 获取当前登录用户信息（这里简化处理）
@@ -55,9 +76,31 @@ public class UserController {
         }
     }
     
-    // 添加子账号接口
+    @Operation(
+            summary = "添加子账号",
+            description = "主账号添加子账号，每个子账号与主账号关联",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"用户管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "子账号添加成功", content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"子账号添加成功\"}"))),
+            @ApiResponse(responseCode = "400", description = "请求参数错误或子账号添加失败"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录"),
+            @ApiResponse(responseCode = "403", description = "只有主账号才能添加子账号")
+    })
     @PostMapping("/subaccount")
-    public ResponseEntity<?> addSubAccount(@RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+    public ResponseEntity<?> addSubAccount(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "子账号信息",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"username\": \"子账号名称\", \"account\": \"subaccount001\", \"email\": \"subaccount@example.com\", \"encryptedPassword\": \"encrypted_password\"}"
+                            )
+                    )
+            )
+            @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
         try {
             // 获取当前登录用户信息
             Long currentUserId = Long.parseLong(request.getAttribute("userId").toString());
@@ -83,9 +126,23 @@ public class UserController {
         }
     }
     
-    // 解除子账号关联接口
+    @Operation(
+            summary = "解除子账号关联",
+            description = "主账号解除与子账号的关联关系",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"用户管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "子账号解除关联成功", content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"子账号解除关联成功\"}"))),
+            @ApiResponse(responseCode = "400", description = "解除关联失败"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录"),
+            @ApiResponse(responseCode = "403", description = "只有主账号才能解除子账号关联"),
+            @ApiResponse(responseCode = "404", description = "子账号不存在")
+    })
     @DeleteMapping("/subaccount/{subAccountId}")
-    public ResponseEntity<?> unlinkSubAccount(@PathVariable Long subAccountId, HttpServletRequest request) {
+    public ResponseEntity<?> unlinkSubAccount(
+            @Parameter(description = "子账号ID", example = "2") @PathVariable Long subAccountId, 
+            HttpServletRequest request) {
         try {
             // 获取当前登录用户信息
             Long currentUserId = Long.parseLong(request.getAttribute("userId").toString());
@@ -106,9 +163,25 @@ public class UserController {
         }
     }
     
-    // 获取用户详情接口
+    @Operation(
+            summary = "获取用户详情",
+            description = "获取用户的详细信息，主账号可以查看任何用户，子账号只能查看自己",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"用户管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"id\": 1, \"username\": \"张三\", \"account\": \"zhangsan\", \"email\": \"zhangsan@example.com\", \"role\": 0, \"status\": 1, \"parentId\": null, \"createdTime\": \"2023-01-01T10:00:00\", \"lastLoginTime\": \"2023-01-10T15:30:00\"}"))),
+            @ApiResponse(responseCode = "400", description = "查询失败"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录"),
+            @ApiResponse(responseCode = "403", description = "无权限查看该用户信息"),
+            @ApiResponse(responseCode = "404", description = "用户不存在")
+    })
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getUserDetail(@PathVariable Long userId, HttpServletRequest request) {
+    public ResponseEntity<?> getUserDetail(
+            @Parameter(description = "用户ID", example = "1") @PathVariable Long userId, 
+            HttpServletRequest request) {
         try {
             // 获取当前登录用户信息
             Long currentUserId = Long.parseLong(request.getAttribute("userId").toString());
@@ -128,9 +201,32 @@ public class UserController {
         }
     }
     
-    // 更新用户状态接口（启用/禁用）
+    @Operation(
+            summary = "更新用户状态",
+            description = "更新用户的状态（启用/禁用）",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"用户管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "用户状态更新成功", content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"用户状态更新成功\"}"))),
+            @ApiResponse(responseCode = "400", description = "更新失败或状态值无效"),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录"),
+            @ApiResponse(responseCode = "404", description = "用户不存在")
+    })
     @PutMapping("/{userId}/status")
-    public ResponseEntity<?> updateUserStatus(@PathVariable Long userId, @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+    public ResponseEntity<?> updateUserStatus(
+            @Parameter(description = "用户ID", example = "1") @PathVariable Long userId, 
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "状态更新请求参数",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"status\": 1}" // 0: 禁用, 1: 启用
+                            )
+                    )
+            )
+            @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
         try {
             // 获取当前登录用户信息
             Long currentUserId = Long.parseLong(request.getAttribute("userId").toString());
@@ -148,8 +244,37 @@ public class UserController {
     }
     
     // 修改密码接口（已登录状态）
+    @Operation(
+            summary = "修改用户密码",
+            description = "当前登录用户修改自己的密码，需要验证旧密码的正确性，新密码需要符合系统安全要求",
+            tags = {"用户管理"},
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "密码修改成功", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"message\": \"密码修改成功\"}"))),
+            @ApiResponse(responseCode = "400", description = "参数错误或密码不匹配", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"error\": \"旧密码错误\"}"))),
+            @ApiResponse(responseCode = "401", description = "未授权，需要登录", 
+                    content = @Content(mediaType = "application/json", 
+                    schema = @Schema(example = "{\"error\": \"未授权访问\"}"))),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
     @PostMapping("/password")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+    public ResponseEntity<?> changePassword(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "密码修改请求参数",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"encryptedOldPassword\": \"old_encrypted_pwd\", \"encryptedNewPassword\": \"new_encrypted_pwd\"}"
+                            )
+                    )
+            )
+            @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
         try {
             // 获取当前登录用户信息
             Long currentUserId = Long.parseLong(request.getAttribute("userId").toString());

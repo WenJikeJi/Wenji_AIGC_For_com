@@ -5,6 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
@@ -15,9 +21,28 @@ public class VerificationCodeController {
     @Autowired
     private AuthService authService;
     
-    // 生成验证码接口
+    @Operation(
+            summary = "生成验证码",
+            description = "生成并发送验证码到用户邮箱，支持注册验证和密码重置两种类型",
+            tags = {"验证码"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "验证码已发送到邮箱", content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"验证码已发送到您的邮箱\"}"))),
+            @ApiResponse(responseCode = "400", description = "验证码生成失败或邮箱格式错误")
+    })
     @PostMapping("/generate")
-    public ResponseEntity<?> generateVerificationCode(@RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+    public ResponseEntity<?> generateVerificationCode(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "生成验证码请求参数",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"email\": \"user@example.com\", \"type\": 1}" // 1: 注册验证, 2: 密码重置
+                            )
+                    )
+            )
+            @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
         try {
             String email = (String) requestBody.get("email");
             Integer type = (Integer) requestBody.get("type"); // 1 = 注册验证, 2 = 密码重置

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 数据库配置
-DATABASE_URL = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}?charset=utf8mb4"
+DATABASE_URL = f"mysql+pymysql://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}?charset=utf8mb4"
 
 # 创建数据库引擎
 engine = create_engine(DATABASE_URL)
@@ -63,18 +63,54 @@ def health_check():
     try:
         # 测试数据库连接
         db = next(get_db())
-        db.execute("SELECT 1")
-        return {"status": "healthy", "database": "connected", "timestamp": datetime.now().isoformat()}
+        result = db.execute(text("SELECT 1"))
+        # 尝试列出所有数据库，确认连接正常
+        databases = db.execute(text("SHOW DATABASES"))
+        db_list = [row[0] for row in databases]
+        return {
+            "status": "healthy", 
+            "database": "connected", 
+            "available_databases": db_list,
+            "timestamp": datetime.now().isoformat()
+        }
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
-        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
+        return {
+            "status": "unhealthy", 
+            "database": "disconnected", 
+            "error": str(e),
+            "connection_string": f"mysql+pymysql://{os.getenv('DB_USERNAME')}:****@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/"
+        }
 
 # 导入路由模块
-from .routes import log_router
+# from .routes import log_router
+from Date_python.routes import log_router
 
 # 注册路由
-app.include_router(log_router)
+app.include_router(log_router, prefix="/logs", tags=["Logs"])
+
+# 添加初始化数据库的函数
+def init_db():
+    try:
+        # 创建所有表
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Failed to create database tables: {str(e)}")
 
 if __name__ == "__main__":
+    # 初始化数据库
+    session = next(get_db())
+    try:
+        # 检查是否连接到正确的数据库
+        current_db = session.execute(text("SELECT DATABASE()")).scalar()
+        logger.info(f"Connected to database: {current_db}")
+        
+        # 尝试创建表（如果需要）
+        init_db()
+    finally:
+        session.close()
+        
+    # 启动服务器
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("SERVER_PORT", 8000)))

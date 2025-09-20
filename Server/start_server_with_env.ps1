@@ -27,9 +27,9 @@ function Load-EnvFile {
 }
 
 # 加载项目根目录的.env文件
-Load-EnvFile -envFilePath "c:/Word_Wenji/dev/.env"
+Load-EnvFile -envFilePath "c:/mian/.env"
 # 加载Server目录的.env文件（优先级更高）
-Load-EnvFile -envFilePath "c:/Word_Wenji/dev/Server/.env"
+Load-EnvFile -envFilePath "c:/mian/Server/.env"
 
 # 显示已加载的关键环境变量以进行调试
 Write-Host "Loaded environment variables:"

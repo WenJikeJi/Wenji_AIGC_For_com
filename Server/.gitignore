@@ -1,0 +1,48 @@
+# Maven 项目标准忽略规则
+# 编译输出
+target/
+
+# 依赖
+/.m2
+
+# 编辑器目录和文件
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS 生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日志文件
+*.log
+logs/
+
+# IDE配置文件
+*.iml
+*.ipr
+*.iws
+
+# 临时文件
+*.tmp
+*.temp
+*.cache
+
+# 打包文件
+*.zip
+*.tar.gz
+*.rar

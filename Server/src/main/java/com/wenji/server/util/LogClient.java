@@ -24,6 +24,9 @@ public class LogClient {
     @Value("${data.python.url}")
     private String pythonServiceUrl;
 
+    @Value("${data.python.api.key:default_api_key}")
+    private String apiKey;
+
     private final RestTemplate restTemplate;
 
     public LogClient() {
@@ -58,7 +61,7 @@ public class LogClient {
             // 设置请求头
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("X-API-KEY", "your_api_key_here"); // 添加API Key认证
+            headers.set("X-API-KEY", apiKey); // 从配置文件中读取API Key
             
             // 构建请求实体（使用JSON格式）
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(params, headers);

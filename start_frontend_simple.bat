@@ -7,7 +7,7 @@ REM 专为Trae环境设计
 cd web
 
 echo 安装前端依赖...
-npm install
+"C:\Program Files\nodejs\npm" install
 
 if %ERRORLEVEL% NEQ 0 (
     echo 依赖安装失败，请检查错误信息
@@ -16,4 +16,4 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo 启动前端服务...
-npm run dev
+"C:\Program Files\nodejs\npm" run dev
