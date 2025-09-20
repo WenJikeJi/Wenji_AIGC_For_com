@@ -20,6 +20,9 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
     
+    // 临时令牌过期时间（30分钟）
+    private static final long TEMP_TOKEN_EXPIRATION = 30 * 60 * 1000;
+    
     // 从令牌中获取用户名
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
@@ -81,5 +84,26 @@ public class JwtUtil {
     public Boolean validateToken(String token, String username) {
         final String tokenUsername = getUsernameFromToken(token);
         return (tokenUsername.equals(username) && !isTokenExpired(token));
+    }
+    
+    // 生成临时令牌
+    public String generateTempToken(Map<String, Object> data) {
+        return Jwts.builder()
+                .setClaims(data)
+                .setSubject("temp_token")
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + TEMP_TOKEN_EXPIRATION))
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
+                .compact();
+    }
+    
+    // 解析临时令牌
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> parseTempToken(String token) {
+        Claims claims = getAllClaimsFromToken(token);
+        if (isTokenExpired(token)) {
+            throw new RuntimeException("临时令牌已过期");
+        }
+        return claims;
     }
 }

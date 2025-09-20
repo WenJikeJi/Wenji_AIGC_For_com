@@ -47,3 +47,41 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+
+# 敏感配置文件
+Server/src/main/resources/application-prod.properties
+Server/src/main/resources/application-dev.properties
+Server/settings.xml
+
+# 密钥和证书
+*.key
+*.pem
+*.p12
+*.jks
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+Server/src/main/resources/db/
+
+# Maven和Gradle
+.m2/
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
+Server/.mvn/wrapper/maven-wrapper.jar
+
+# 本地配置
+local.properties
+
+# 测试和部署脚本
+deploy_check.bat
+setup_env.bat
+setup_env.sh
+test_*.js
+
+# 文档文件（如果包含敏感信息）
+*_REPORT.md
+*_REVIEW.md
+*_RECOMMENDATIONS.md
+*_ISSUES_FIXED.md

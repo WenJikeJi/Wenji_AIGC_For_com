@@ -2,9 +2,14 @@ package com.wenji.server.service;
 
 import com.wenji.server.model.UserAccount;
 import com.wenji.server.model.UserOperationLog;
+import com.wenji.server.model.SystemEncryptionConfig;
 import com.wenji.server.repository.UserAccountRepository;
 import com.wenji.server.repository.UserOperationLogRepository;
+import com.wenji.server.repository.SystemEncryptionConfigRepository;
 import com.wenji.server.util.EmailUtil;
+import com.wenji.server.util.RsaUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -22,6 +27,8 @@ import java.util.regex.Pattern;
 @Service
 public class UserService {
     
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    
     @Autowired
     private UserAccountRepository userAccountRepository;
     
@@ -29,10 +36,16 @@ public class UserService {
     private UserOperationLogRepository userOperationLogRepository;
     
     @Autowired
+    private SystemEncryptionConfigRepository systemEncryptionConfigRepository;
+    
+    @Autowired
     private PasswordEncoder passwordEncoder;
     
     @Autowired
     private EmailUtil emailUtil;
+    
+    @Autowired
+    private RsaUtil rsaUtil;
     
     @Value("${data.python.url}")
     private String dataPythonUrl;
@@ -78,9 +91,17 @@ public class UserService {
             if (encryptedPassword == null || encryptedPassword.isEmpty()) {
                 password = generateRandomPassword();
             } else {
-                // TODO: 这里应该用RSA解密密码
-                // 暂时使用随机密码作为示例
-                password = generateRandomPassword();
+                // 使用RSA解密密码
+                try {
+                    // 获取系统私钥
+                    SystemEncryptionConfig encryptionConfig = systemEncryptionConfigRepository.findByStatus(1)
+                            .orElseThrow(() -> new RuntimeException("加密配置不存在"));
+                    password = rsaUtil.decrypt(encryptedPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
+                } catch (Exception e) {
+                    log.error("RSA解密密码失败: {}", e.getMessage());
+                    // 解密失败时使用随机密码
+                    password = generateRandomPassword();
+                }
             }
             
             // 6. 创建子账号

@@ -5,7 +5,7 @@
 ## 功能特性
 
 - 提供统一的用户操作日志收集API
-- 支持PostgreSQL数据库连接
+- 支持MySQL数据库连接
 - 使用FastAPI框架，高性能、易于扩展
 - 包含完整的日志管理功能（记录、查询、清理、统计）
 
@@ -37,11 +37,11 @@ Date_python/
 在`.env`文件中配置以下环境变量：
 
 ```
-# PostgreSQL数据库配置
+# MySQL数据库配置
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=3306
 DB_NAME=wenji_db
-DB_USER=postgres
+DB_USER=root
 DB_PASSWORD=password
 
 # 服务配置
@@ -269,7 +269,7 @@ public class PythonLogServiceClient {
 
 ## 部署说明
 
-1. 确保已安装Python 3.8+和PostgreSQL数据库
+1. 确保已安装Python 3.8+和MySQL数据库
 2. 配置.env文件中的数据库连接信息
 3. 安装依赖：`pip install -r requirements.txt`
 4. 启动服务：`uvicorn main:app --host 0.0.0.0 --port 8000`

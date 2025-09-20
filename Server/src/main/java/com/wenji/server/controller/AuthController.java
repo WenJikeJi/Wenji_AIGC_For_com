@@ -81,7 +81,33 @@ public class AuthController {
         }
     }
     
-    // 重置密码接口
+    // 发送验证码接口
+    @PostMapping("/send-verification-code")
+    public ResponseEntity<?> sendVerificationCode(@RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+        try {
+            String email = (String) requestBody.get("email");
+            Integer type = (Integer) requestBody.get("type");
+            
+            // 如果没有指定type，默认为注册验证码
+            if (type == null) {
+                type = 1;
+            }
+            
+            // 验证type参数
+            if (type != 1 && type != 2) {
+                throw new RuntimeException("验证码类型错误");
+            }
+            
+            // 获取客户端IP
+            String clientIp = getClientIp(request);
+            
+            authService.sendVerificationCode(email, type, clientIp);
+            return ResponseEntity.ok(Map.of("message", "验证码已发送到您的邮箱"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, Object> requestBody) {
         try {

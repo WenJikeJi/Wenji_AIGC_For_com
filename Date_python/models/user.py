@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Index, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..main import Base
@@ -7,10 +7,10 @@ class UserAccount(Base):
     __tablename__ = "user_account"
     
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(100), unique=True, index=True, nullable=False)
+    username = Column(String(50), nullable=False)
     account = Column(String(50), unique=True, index=True, nullable=False)
-    email = Column(String(100), unique=True, index=True, nullable=False)
-    password = Column(String(255), nullable=False)
+    email = Column(String(100), nullable=False)
+    password = Column(String(100), nullable=False)
     role = Column(Integer, nullable=False, default=0, comment='0 = 主账号，1 = 子账号')
     parent_id = Column(Integer, ForeignKey("user_account.id"), comment='子账号关联主账号ID')
     email_verified = Column(Integer, nullable=False, default=0, comment='0 = 未验证，1 = 已验证')

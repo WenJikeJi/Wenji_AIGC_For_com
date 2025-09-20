@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -29,9 +31,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
     
+    // 定义不需要JWT验证的路径
+    private static final List<String> EXCLUDED_PATHS = Arrays.asList(
+        "/api/auth/login",
+        "/api/auth/register", 
+        "/api/auth/send-verification-code",
+        "/api/verify-code",
+        "/api/encryption/public-key",
+        "/api/auth/forgot-password",
+        "/api/auth/reset-password",
+        "/api/auth/feishu",
+        "/swagger-ui",
+        "/v3/api-docs"
+    );
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        
+        String requestPath = request.getRequestURI();
+        logger.debug("处理请求路径: {}", requestPath);
+        
+        // 检查是否是排除的路径
+        boolean isExcluded = EXCLUDED_PATHS.stream().anyMatch(path -> requestPath.startsWith(path));
+        
+        if (isExcluded) {
+            logger.debug("路径 {} 被排除，跳过JWT验证", requestPath);
+            filterChain.doFilter(request, response);
+            return;
+        }
         
         final String authorizationHeader = request.getHeader("Authorization");
         
@@ -53,6 +81,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             
             if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
+                // 从JWT中提取用户信息并设置到request属性中
+                try {
+                    Long userId = jwtUtil.getUserIdFromToken(jwt);
+                    Integer role = jwtUtil.getUserRoleFromToken(jwt);
+                    
+                    // 设置request属性，供Controller使用
+                    request.setAttribute("userId", userId);
+                    request.setAttribute("role", role);
+                    
+                    logger.debug("JWT验证成功，用户ID: {}, 角色: {}", userId, role);
+                } catch (Exception e) {
+                    logger.error("从JWT中提取用户信息失败: {}", e.getMessage());
+                }
+                
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken

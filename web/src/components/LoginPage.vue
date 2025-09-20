@@ -281,16 +281,36 @@
                 <!-- 飞书登录 - 增大二维码 -->
                 <div v-if="currentTab === 'feishu'" class="flex flex-col items-center animate-slideIn h-full justify-between">
                   <div class="w-full">
-                    <!-- 增大二维码容器和尺寸 -->
+                    <!-- 飞书二维码容器 -->
                     <div class="w-full bg-gray-50 rounded-xl flex items-center justify-center mb-6 border border-gray-200 shadow-sm relative py-4">
                       <div class="text-center px-4">
                         <p class="text-sm text-gray-500 mb-3">通过飞书账号登录，享受更便捷的服务</p>
-                        <!-- 增大二维码尺寸 -->
-                        <div class="w-64 h-64 grid grid-cols-6 gap-1 mx-auto">
-                          <template v-for="i in 36" :key="i">
-                            <div :class="i % 5 === 0 ? 'bg-blue-700' : 'bg-transparent border border-gray-100'"></div>
-                          </template>
+                        
+                        <!-- 动态二维码 -->
+                        <div v-if="isFeishuLoading" class="w-64 h-64 flex items-center justify-center">
+                          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                         </div>
+                        
+                        <div v-else-if="feishuQrCodeUrl" class="w-64 h-64 mx-auto">
+                          <iframe 
+                            :src="feishuQrCodeUrl" 
+                            class="w-full h-full border-0 rounded-lg"
+                            title="飞书登录二维码">
+                          </iframe>
+                        </div>
+                        
+                        <div v-else class="w-64 h-64 flex items-center justify-center text-gray-400">
+                          <div class="text-center">
+                            <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <p class="text-sm">二维码加载失败</p>
+                            <button @click="initFeishuLogin" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                              重新加载
+                            </button>
+                          </div>
+                        </div>
+                        
                         <div class="absolute bottom-0 left-0 right-0 bg-blue-800 text-white text-xs text-center py-2 rounded-b-xl">
                           扫码登录飞书账号
                         </div>
@@ -645,7 +665,16 @@ export default {
       confirmPasswordError: '',
       termsError: '',
       isRegisterSendingCode: false,
-      registerCodeCountdown: 0
+      registerCodeCountdown: 0,
+
+      // 飞书登录数据
+      feishuQrCodeUrl: '',
+      feishuState: '',
+      feishuTempToken: '',
+      feishuUserInfo: null,
+      isFeishuLoading: false,
+      feishuBindEmail: '',
+      feishuBindEmailError: ''
     };
   },
   async mounted() {
@@ -657,6 +686,8 @@ export default {
     } catch (error) {
       console.error('初始化验证码失败:', error);
     }
+    // 初始化飞书登录
+    this.initFeishuLogin();
   },
   methods: {
     // 跳转到首页
@@ -676,7 +707,7 @@ export default {
         
         // 在真实项目中，这里应该有更严格的验证逻辑
         if (token || userInfo) {
-          console.log('用户已登录，正在跳转到主页面...');
+          // 用户已登录，跳转到主页面
           
           // 跳转到首页
           this.goToHome();
@@ -740,7 +771,7 @@ export default {
 
       if (isValid) {
         // 登录逻辑
-        console.log('登录信息:', {
+        console.log('登录信息处理', {
           email: this.email,
           password: this.password,
           verificationCode: this.verificationCode,
@@ -1111,6 +1142,86 @@ export default {
           // 显示错误提示
           showError(error.message || '注册失败，请重试', '注册失败');
         }
+      }
+    },
+
+    // 飞书登录相关方法
+    async initFeishuLogin() {
+      try {
+        this.isFeishuLoading = true;
+        const response = await authAPI.getFeishuQrCode();
+        this.feishuQrCodeUrl = response.qrCodeUrl;
+        this.feishuState = response.state;
+      } catch (error) {
+        console.error('获取飞书二维码失败:', error);
+        showError('获取飞书登录二维码失败，请稍后重试');
+      } finally {
+        this.isFeishuLoading = false;
+      }
+    },
+
+    async handleFeishuCallback() {
+      // 检查URL参数中是否有飞书回调
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      
+      if (code && state && state === this.feishuState) {
+        try {
+          this.isFeishuLoading = true;
+          // 这里应该调用后端处理飞书回调
+          // 由于前端无法直接调用回调接口，我们需要通过其他方式处理
+          showSuccess('飞书登录成功，正在处理...');
+        } catch (error) {
+          console.error('处理飞书回调失败:', error);
+          showError('飞书登录失败，请重试');
+        } finally {
+          this.isFeishuLoading = false;
+        }
+      }
+    },
+
+    async bindFeishuEmail() {
+      if (!this.feishuBindEmail) {
+        this.feishuBindEmailError = '请输入邮箱地址';
+        return;
+      }
+
+      if (!this.feishuTempToken) {
+        showError('临时令牌无效，请重新扫码登录');
+        return;
+      }
+
+      try {
+        this.isFeishuLoading = true;
+        const response = await authAPI.bindFeishuEmail(this.feishuTempToken, this.feishuBindEmail);
+        
+        // 保存登录信息
+        saveAuthInfo(response.token, {
+          id: response.userId,
+          username: response.username,
+          email: response.email,
+          role: response.role
+        });
+
+        showSuccess('飞书账号绑定成功！');
+        this.goToHome();
+      } catch (error) {
+        console.error('绑定飞书账号失败:', error);
+        showError(error.message || '绑定飞书账号失败，请重试');
+      } finally {
+        this.isFeishuLoading = false;
+      }
+    },
+
+    validateFeishuEmail() {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!this.feishuBindEmail) {
+        this.feishuBindEmailError = '请输入邮箱地址';
+      } else if (!emailRegex.test(this.feishuBindEmail)) {
+        this.feishuBindEmailError = '请输入有效的邮箱地址';
+      } else {
+        this.feishuBindEmailError = '';
       }
     }
   },

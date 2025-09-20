@@ -18,7 +18,7 @@ public class EmailUtil {
         message.setSubject(subject);
         message.setText(content);
         // 设置发件人（可以从配置中读取）
-        message.setFrom("noreply@wenji.com");
+        message.setFrom("service@shamillaa.com");
         
         mailSender.send(message);
     }

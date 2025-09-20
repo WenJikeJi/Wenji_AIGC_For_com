@@ -57,9 +57,10 @@ public class LogClient {
             
             // 设置请求头
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("X-API-KEY", "your_api_key_here"); // 添加API Key认证
             
-            // 构建请求实体
+            // 构建请求实体（使用JSON格式）
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(params, headers);
             
             // 发送请求

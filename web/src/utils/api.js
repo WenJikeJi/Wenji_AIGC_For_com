@@ -150,18 +150,18 @@ export const authAPI = {
 login: async (email, password, verificationCode, rememberMe, captchaId) => {
   try {
     // 强制加密并打印调试信息
-    console.log('原始密码:', password);
+      // 密码加密处理
     
     // 尝试获取RSA公钥并加密
     try {
       // 获取RSA公钥
       const publicKeyInfo = await getRsaPublicKey();
-      console.log('获取公钥成功:', publicKeyInfo.keyVersion);
+      // 获取公钥成功
       
       // 为了简化演示和确保兼容性，我们直接使用Base64编码作为临时加密方案
       // 在实际项目中应该使用专门的RSA加密库
       const encryptedPwd = btoa(unescape(encodeURIComponent(password)));
-      console.log('加密后密码:', encryptedPwd);
+      // 密码加密完成
       
       // 根据后端API文档，使用正确的端点路径/api/auth/login
       // 调整参数以匹配后端要求，确保发送完整参数
@@ -173,11 +173,11 @@ login: async (email, password, verificationCode, rememberMe, captchaId) => {
         captchaId: captchaId
       }, false);
     } catch (rsaError) {
-      console.warn('RSA加密失败，使用备用加密方案:', rsaError);
+      // RSA加密失败，使用备用加密方案
       
       // 备用加密方案：使用简化的AES加密
       const encryptedPwd = encryptData(password);
-      console.log('备用加密后密码:', encryptedPwd);
+      // 备用加密完成
       
       // 发送登录请求
       return await request('api/auth/login', 'POST', {
@@ -351,10 +351,31 @@ registerAccount: async (email, registerCode, password, confirmPassword, agreeTer
   return request('api/auth/register', 'POST', {
     email,
     registerCode,
-    registerPassword: password,
-    confirmPassword,
-    agreeTerms
-  });
+  registerPassword: password,
+  confirmPassword,
+  agreeTerms
+});
+},
+
+/**
+ * 获取飞书登录二维码
+ * @returns {Promise<Object>} - 返回二维码URL和state
+ */
+getFeishuQrCode: async () => {
+  return await request('api/auth/feishu/qrcode', 'GET', null, false);
+},
+
+/**
+ * 绑定飞书账号与邮箱
+ * @param {string} tempToken - 临时令牌
+ * @param {string} email - 邮箱
+ * @returns {Promise<Object>} - 返回绑定结果
+ */
+bindFeishuEmail: async (tempToken, email) => {
+  return await request('api/auth/feishu/bind-email', 'POST', {
+    tempToken,
+    email
+  }, false);
 }
 };
 

@@ -703,7 +703,7 @@ export default {
     }
   },
   mounted() {
-    console.log('项目介绍首页已加载');
+    // 项目介绍首页已加载
     
     // 导航栏滚动效果
     window.addEventListener('scroll', this.handleScroll);
