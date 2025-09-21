@@ -83,8 +83,8 @@ set "JWT_SECRET=wenji_secret_key_1234567890"
 :: 邮件配置（飞书邮箱）
 set "MAIL_HOST=smtp.feishu.cn"
 set "MAIL_PORT=465"
-set "MAIL_USERNAME=service@wenji.com"
-set "MAIL_PASSWORD=ecSF2NmEODJNkB7"
+set "MAIL_USERNAME=service@shamillaa.com"
+set "MAIL_PASSWORD=ecSf2NmEOOdJNkBT"
 set "MAIL_PROPERTIES_MAIL_SMTP_AUTH=true"
 :: 服务器端口（可修改）
 set "SERVER_PORT=8080"

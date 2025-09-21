@@ -1,6 +1,8 @@
 package com.wenji.server.controller;
 
 import com.wenji.server.service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +15,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/verify-code")
 public class VerificationCodeController {
+    
+    private static final Logger log = LoggerFactory.getLogger(VerificationCodeController.class);
     
     @Autowired
     private AuthService authService;
@@ -27,8 +32,8 @@ public class VerificationCodeController {
             tags = {"验证码"}
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "验证码已发送到邮箱", content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"验证码已发送到您的邮箱\"}"))),
-            @ApiResponse(responseCode = "400", description = "验证码生成失败或邮箱格式错误")
+            @ApiResponse(responseCode = "200", description = "验证码已生成", content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"message\": \"验证码已生成，我们会尽力发送到您的邮箱\", \"status\": \"success\", \"type\": 1, \"email\": \"user@example.com\", \"alternativeMethod\": \"如果未收到邮件，您可以通过系统管理工具从数据库获取验证码\"}"))),
+            @ApiResponse(responseCode = "500", description = "服务器内部错误", content = @Content(mediaType = "application/json", schema = @Schema(example = "{\"error\": \"错误信息\", \"status\": \"failed\", \"email\": \"user@example.com\", \"timestamp\": 1684567890000, \"supportInfo\": \"请检查您的邮箱是否正确，或联系系统管理员获取帮助\"}")))
     })
     @PostMapping("/generate")
     public ResponseEntity<?> generateVerificationCode(
@@ -55,10 +60,36 @@ public class VerificationCodeController {
             // 获取客户端IP
             String clientIp = getClientIp(request);
             
+            // 调用服务发送验证码（注意：即使邮件发送失败，服务层也会返回成功，验证码会保存到数据库）
             authService.sendVerificationCode(email, type, clientIp);
-            return ResponseEntity.ok(Map.of("message", "验证码已发送到您的邮箱"));
+            
+            // 构建返回结果，包含提示信息
+            Map<String, Object> result = new HashMap<>();
+            result.put("message", "验证码已生成，我们会尽力发送到您的邮箱");
+            result.put("status", "success");
+            result.put("type", type);
+            result.put("email", email);
+            
+            // 添加备用方案提示
+            result.put("alternativeMethod", "如果未收到邮件，您可以通过系统管理工具从数据库获取验证码");
+            
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            // 记录异常信息
+            log.error("生成验证码失败: {}", e.getMessage(), e);
+            
+            // 构建错误响应
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            errorResponse.put("status", "failed");
+            String email = (String) requestBody.get("email");
+            errorResponse.put("email", email);
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            // 添加技术支持信息
+            errorResponse.put("supportInfo", "请检查您的邮箱是否正确，或联系系统管理员获取帮助");
+            
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
     

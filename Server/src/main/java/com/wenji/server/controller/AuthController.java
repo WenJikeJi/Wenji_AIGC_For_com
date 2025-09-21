@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,9 +37,8 @@ public class AuthController {
                     schema = @Schema(example = "{\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\", \"userId\": 1, \"username\": \"张三\", \"role\": 0}"))),
             @ApiResponse(responseCode = "400", description = "账号或密码错误")
     })
-    // 登录接口 - 添加@CrossOrigin注解强制启用跨域配置
+    // 登录接口
     @PostMapping("/login")
-    @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
     public ResponseEntity<?> login(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "登录请求参数",
@@ -188,10 +188,38 @@ public class AuthController {
             // 获取客户端IP
             String clientIp = getClientIp(request);
             
+            // 调用服务发送验证码（注意：即使邮件发送失败，服务层也会返回成功，验证码会保存到数据库）
             authService.sendVerificationCode(email, type, clientIp);
-            return ResponseEntity.ok(Map.of("message", "验证码已发送到您的邮箱"));
+            
+            // 构建返回结果，包含提示信息
+            Map<String, Object> result = new HashMap<>();
+            result.put("message", "验证码已生成，我们会尽力发送到您的邮箱");
+            result.put("status", "success");
+            result.put("type", type);
+            result.put("email", email);
+            
+            // 添加备用方案提示
+            result.put("alternativeMethod", "如果未收到邮件，您可以通过系统管理工具从数据库获取验证码");
+            
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            // 记录异常信息
+            log.error("发送验证码失败: {}", e.getMessage(), e);
+            
+            // 构建错误响应
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            errorResponse.put("status", "failed");
+            if (requestBody != null) {
+                String email = (String) requestBody.get("email");
+                errorResponse.put("email", email);
+            }
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            // 添加技术支持信息
+            errorResponse.put("supportInfo", "请检查您的邮箱是否正确，或联系系统管理员获取帮助");
+            
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 

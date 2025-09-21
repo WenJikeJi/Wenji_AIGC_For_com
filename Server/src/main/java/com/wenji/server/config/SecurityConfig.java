@@ -15,6 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -43,10 +46,41 @@ public class SecurityConfig {
         return new RestTemplate();
     }
     
+    // 配置CORS
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        // 允许的源（使用pattern，支持通配符，兼容allowCredentials=true）
+        config.addAllowedOriginPattern("http://localhost:5173"); // 前端域名
+        
+        // 允许的请求头
+        config.addAllowedHeader("*");
+        
+        // 允许的请求方法
+        config.addAllowedMethod("GET");
+        config.addAllowedMethod("POST");
+        config.addAllowedMethod("PUT");
+        config.addAllowedMethod("DELETE");
+        config.addAllowedMethod("OPTIONS"); // 预检请求
+        
+        // 允许携带凭证（Cookie/Token）
+        config.setAllowCredentials(true);
+        
+        // 预检请求缓存时间（减少OPTIONS请求）
+        config.setMaxAge(3600L);
+        
+        // 应用到所有接口
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+    
     // 配置安全过滤器链
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // 关键：启用CORS，并指定使用上面定义的corsConfigurationSource
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // 禁用CSRF保护（因为使用JWT）
             .csrf(csrf -> csrf.disable())
             // 设置会话管理为无状态

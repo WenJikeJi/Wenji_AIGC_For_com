@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.Map;
 import java.util.HashMap;
@@ -195,29 +196,66 @@ public class AuthService {
     
     // 发送验证码
     public void sendVerificationCode(String email, Integer type, String ip) {
-        // 1. 检查IP请求频率（1小时内不超过5次）
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        int count = verificationCodeRepository.countByRequestIpAndCreatedTimeAfter(ip, oneHourAgo);
+        // 1. 检查IP请求频率（1分钟内不超过5次）
+        LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
+        int count = verificationCodeRepository.countByRequestIpAndCreatedTimeAfter(ip, oneMinuteAgo);
         if (count >= 5) {
-            throw new RuntimeException("请求过于频繁，请稍后再试");
+            throw new RuntimeException("请求过于频繁，每分钟最多可以请求5次验证码");
         }
         
-        // 2. 生成6位数字验证码
+        // 2. 检查请求间隔（不能少于12秒）
+        Optional<LocalDateTime> lastRequestTime = verificationCodeRepository.findLastRequestTimeByIp(ip);
+        if (lastRequestTime.isPresent()) {
+            long secondsSinceLastRequest = ChronoUnit.SECONDS.between(lastRequestTime.get(), LocalDateTime.now());
+            if (secondsSinceLastRequest < 12) {
+                throw new RuntimeException("请求间隔过短，请等待" + (12 - secondsSinceLastRequest) + "秒后再试");
+            }
+        }
+        
+        // 3. 生成6位数字验证码
         String code = generateVerificationCode();
         
-        // 3. 保存验证码
+        // 4. 保存验证码
         VerificationCode verificationCode = new VerificationCode();
         verificationCode.setEmail(email);
         verificationCode.setCode(code);
         verificationCode.setType(type);
-        verificationCode.setExpiredTime(LocalDateTime.now().plusMinutes(15));
+        verificationCode.setExpiredTime(LocalDateTime.now().plusMinutes(15)); // 有效期15分钟
         verificationCode.setUsed(0);
         verificationCode.setRequestIp(ip);
         
         verificationCodeRepository.save(verificationCode);
         
-        // 4. 发送验证码邮件
-        emailUtil.sendVerificationCode(email, code, type);
+        // 5. 发送验证码邮件 - 优化异常处理，确保即使邮件发送失败也不影响核心功能
+        try {
+            emailUtil.sendVerificationCode(email, code, type);
+        } catch (Exception e) {
+            // 记录邮件发送失败的详细日志
+            System.err.println("邮件发送失败: " + e.getMessage());
+            System.err.println("详细错误信息: " + e.toString());
+            
+            // 获取完整的异常堆栈信息
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+            e.printStackTrace(pw);
+            System.err.println("异常堆栈: " + sw.toString());
+            
+            // 记录到日志服务（如果可用）
+            try {
+                logClient.recordOperationLog(
+                    null,  // 未登录用户
+                    "邮件发送失败",
+                    ip,
+                    null,
+                    "向" + email + "发送验证码失败: " + e.getMessage(),
+                    1 // 加密传输
+                );
+            } catch (Exception logEx) {
+                System.err.println("记录日志失败: " + logEx.getMessage());
+            }
+            
+            // 注意：不抛出异常，确保验证码生成和保存成功
+        }
     }
     
     // 重置密码

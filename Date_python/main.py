@@ -84,7 +84,7 @@ def health_check():
 
 # 导入路由模块
 # from .routes import log_router
-from Date_python.routes import log_router
+from .routes import log_router
 
 # 注册路由
 app.include_router(log_router, prefix="/logs", tags=["Logs"])

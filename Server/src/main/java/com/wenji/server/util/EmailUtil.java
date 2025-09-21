@@ -1,6 +1,7 @@
 package com.wenji.server.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -11,14 +12,17 @@ public class EmailUtil {
     @Autowired
     private JavaMailSender mailSender;
     
+    @Value("${spring.mail.properties.mail.from}")
+    private String fromEmail;
+    
     // 发送简单邮件
     public void sendSimpleEmail(String to, String subject, String content) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
         message.setText(content);
-        // 设置发件人（可以从配置中读取）
-        message.setFrom("service@shamillaa.com");
+        // 从配置文件中读取发件人
+        message.setFrom(fromEmail);
         
         mailSender.send(message);
     }

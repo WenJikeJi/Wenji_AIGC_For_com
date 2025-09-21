@@ -31,12 +31,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
     
-    // 定义不需要JWT验证的路径
+    // 定义不需要JWT验证的路径 - 使用简单路径，避免startsWith匹配问题
     private static final List<String> EXCLUDED_PATHS = Arrays.asList(
         "/api/auth/login",
         "/api/auth/register", 
         "/api/auth/send-verification-code",
         "/api/verify-code",
+        "/api/verify-code/generate",
+        "/api/verify-code/validate",
         "/api/encryption/public-key",
         "/api/auth/forgot-password",
         "/api/auth/reset-password",

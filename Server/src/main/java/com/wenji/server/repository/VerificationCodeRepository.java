@@ -28,6 +28,10 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
     @Query("SELECT COUNT(v) FROM VerificationCode v WHERE v.requestIp = :ip AND v.createdTime >= :startTime")
     int countByRequestIpAndCreatedTimeAfter(@Param("ip") String ip, @Param("startTime") LocalDateTime startTime);
     
+    // 获取指定IP的最后请求时间
+    @Query("SELECT MAX(v.createdTime) FROM VerificationCode v WHERE v.requestIp = :ip")
+    Optional<LocalDateTime> findLastRequestTimeByIp(@Param("ip") String ip);
+    
     // 清理过期验证码
     @Modifying
     @Transactional
