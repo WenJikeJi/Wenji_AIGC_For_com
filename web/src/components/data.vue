@@ -183,7 +183,7 @@
           <!-- 平台数据卡片 -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             <!-- Facebook 卡片 -->
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 hover:shadow-lg transition-all duration-300 group text-white">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 hover:shadow-lg transition-all duration-300 group text-white hover-lift interactive-element">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
                   <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
@@ -217,7 +217,7 @@
             </div>
 
             <!-- Instagram 卡片 -->
-            <div class="bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl p-6 hover:shadow-lg transition-all duration-300 group text-white">
+            <div class="bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl p-6 hover:shadow-lg transition-all duration-300 group text-white hover-lift interactive-element">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
                   <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
@@ -251,7 +251,7 @@
             </div>
 
             <!-- TikTok 卡片 -->
-            <div class="bg-gradient-to-r from-black to-gray-800 rounded-xl p-6 hover:shadow-lg transition-all duration-300 group text-white">
+            <div class="bg-gradient-to-r from-black to-gray-800 rounded-xl p-6 hover:shadow-lg transition-all duration-300 group text-white hover-lift interactive-element">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
                   <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
@@ -289,15 +289,15 @@
         <div class="grid grid-cols-1 gap-4">
           
         <!-- 帖子表现排名 -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <div class="bg-white rounded-2xl p-6 shadow-sm glass-effect">
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-xl font-bold text-gray-900">帖子表现排名</h3>
-            <button class="text-blue-600 hover:text-blue-700 text-sm font-weight-500 flex items-center transition-colors">
+            <button class="text-blue-600 hover:text-blue-700 text-sm font-weight-500 flex items-center transition-colors interactive-element">
               查看全部 <i class="fas fa-arrow-right ml-1"></i>
             </button>
           </div>          
-          <div class="overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0">
-            <table class="w-full">
+          <div class="overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0 custom-scrollbar">
+            <table class="w-full min-w-[600px]">
               <thead>
                 <tr class="border-b border-gray-200">
                   <th class="text-left py-3 px-4 font-semibold text-gray-600 text-sm">内容</th>
@@ -305,25 +305,27 @@
                   <th class="text-center py-3 px-4 font-semibold text-gray-600 text-sm hidden sm:table-cell">发布时间</th>
                   <th class="text-center py-3 px-4 font-semibold text-gray-600 text-sm">点赞数</th>
                   <th class="text-center py-3 px-4 font-semibold text-gray-600 text-sm hidden md:table-cell">评论数</th>
-                  <th class="text-center py-3 px-4 font-semibold text-gray-600 text-sm hidden md:table-cell">分享数</th>
+                  <th class="text-center py-3 px-4 font-semibold text-gray-600 text-sm hidden lg:table-cell">分享数</th>
                 </tr>
               </thead>
               <tbody>
-                <tr class="border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                <tr class="border-b border-gray-100 hover:bg-blue-50 transition-colors interactive-element">
                   <td class="py-4 px-4">
                     <div class="flex items-center space-x-3">
-                      <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                      <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <i class="fas fa-image text-pink-600"></i>
                       </div>
-                      <div>
-                        <p class="font-medium text-gray-900 text-sm">新产品发布，限时优惠现在开始！</p>
+                      <div class="min-w-0 flex-1">
+                        <p class="font-medium text-gray-900 text-sm truncate">新产品发布，限时优惠现在开始！</p>
                         <p class="text-xs text-gray-500 mt-1">营销 · 产品</p>
                       </div>
                     </div>
                   </td>
                   <td class="text-center py-4 px-4">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
-                      <i class="fab fa-instagram mr-1"></i> Instagram
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800 whitespace-nowrap">
+                      <i class="fab fa-instagram mr-1"></i> 
+                      <span class="hidden sm:inline">Instagram</span>
+                      <span class="sm:hidden">IG</span>
                     </span>
                   </td>
                   <td class="text-center py-4 px-4 text-sm text-gray-600 hidden sm:table-cell">2023-07-10</td>
@@ -333,25 +335,27 @@
                   <td class="text-center py-4 px-4 hidden md:table-cell">
                     <span class="font-semibold text-gray-900">246</span>
                   </td>
-                  <td class="text-center py-4 px-4 hidden md:table-cell">
+                  <td class="text-center py-4 px-4 hidden lg:table-cell">
                     <span class="font-semibold text-gray-900">182</span>
                   </td>
                 </tr>
-                <tr class="bg-gray-50/50 border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                <tr class="bg-gray-50/50 border-b border-gray-100 hover:bg-blue-50 transition-colors interactive-element">
                   <td class="py-4 px-4">
                     <div class="flex items-center space-x-3">
-                      <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <i class="fas fa-trophy text-blue-600"></i>
                       </div>
-                      <div>
-                        <p class="font-medium text-gray-900 text-sm">公司获得行业奖项，感谢所有用户支持！</p>
+                      <div class="min-w-0 flex-1">
+                        <p class="font-medium text-gray-900 text-sm truncate">公司获得行业奖项，感谢所有用户支持！</p>
                         <p class="text-xs text-gray-500 mt-1">企业 · 成就</p>
                       </div>
                     </div>
                   </td>
                   <td class="text-center py-4 px-4">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      <i class="fab fa-facebook-f mr-1"></i> Facebook
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
+                      <i class="fab fa-facebook-f mr-1"></i> 
+                      <span class="hidden sm:inline">Facebook</span>
+                      <span class="sm:hidden">FB</span>
                     </span>
                   </td>
                   <td class="text-center py-4 px-4 text-sm text-gray-600 hidden sm:table-cell">2023-07-08</td>
@@ -361,25 +365,27 @@
                   <td class="text-center py-4 px-4 hidden md:table-cell">
                     <span class="font-semibold text-gray-900">178</span>
                   </td>
-                  <td class="text-center py-4 px-4 hidden md:table-cell">
+                  <td class="text-center py-4 px-4 hidden lg:table-cell">
                     <span class="font-semibold text-gray-900">312</span>
                   </td>
                 </tr>
-                <tr class="hover:bg-blue-50 transition-colors">
+                <tr class="hover:bg-blue-50 transition-colors interactive-element">
                   <td class="py-4 px-4">
                     <div class="flex items-center space-x-3">
-                      <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                      <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <i class="fas fa-book text-pink-600"></i>
                       </div>
-                      <div>
-                        <p class="font-medium text-gray-900 text-sm">产品教程，详细分步指南</p>
+                      <div class="min-w-0 flex-1">
+                        <p class="font-medium text-gray-900 text-sm truncate">产品教程，详细分步指南</p>
                         <p class="text-xs text-gray-500 mt-1">教育 · 教程</p>
                       </div>
                     </div>
                   </td>
                   <td class="text-center py-4 px-4">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
-                      <i class="fab fa-instagram mr-1"></i> Instagram
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800 whitespace-nowrap">
+                      <i class="fab fa-instagram mr-1"></i> 
+                      <span class="hidden sm:inline">Instagram</span>
+                      <span class="sm:hidden">IG</span>
                     </span>
                   </td>
                   <td class="text-center py-4 px-4 text-sm text-gray-600 hidden sm:table-cell">2023-07-05</td>
@@ -389,7 +395,7 @@
                   <td class="text-center py-4 px-4 hidden md:table-cell">
                     <span class="font-semibold text-gray-900">143</span>
                   </td>
-                  <td class="text-center py-4 px-4 hidden md:table-cell">
+                  <td class="text-center py-4 px-4 hidden lg:table-cell">
                     <span class="font-semibold text-gray-900">98</span>
                   </td>
                 </tr>

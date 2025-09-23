@@ -47,6 +47,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         "/api/auth/captcha/verify",
         "/api/social/facebook/callback",
         "/api/social/facebook/auth-url",
+        "/api/social/facebook/save-token",
+        "/api/social/facebook/verify-token",
+        "/api/social/facebook/validate-token",
+        "/api/social-platforms/status",
         "/swagger-ui",
         "/v3/api-docs"
     );
@@ -60,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // 检查是否是排除的路径
         boolean isExcluded = EXCLUDED_PATHS.stream().anyMatch(path -> {
-            boolean matches = requestPath.startsWith(path);
+            boolean matches = requestPath.equals(path);
             logger.info("检查路径 {} 是否匹配排除路径 {}: {}", requestPath, path, matches);
             return matches;
         });

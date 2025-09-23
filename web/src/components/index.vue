@@ -256,7 +256,7 @@
         </div>
       </div>
         
-        <!-- 水平滚动容器 -->
+        <!-- 水平滚动容器 --> 
         <div class="relative mb-16">
           <!-- 滚动容器 - 只显示3个卡片 -->
           <div class="overflow-hidden max-w-7xl mx-auto">
@@ -1218,16 +1218,284 @@ export default {
 </script>
 
 <style scoped>
-/* 自定义样式 */
+/* ==================== 现代化主页样式 ==================== */
+
 /* 确保内容完全铺满页面宽度 */
 .container {
   width: 100%;
   margin: 0 auto;
   padding: 0 1.5rem;
+  max-width: 1200px;
 }
 
-/* 响应式调整 */
-@media (max-width: 640px) {
+/* 现代化英雄区域 */
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+/* 现代化卡片样式 */
+.feature-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xl);
+  transition: all var(--transition-normal);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--brand-gradient);
+  transform: translateX(-100%);
+  transition: transform var(--transition-normal);
+}
+
+.feature-card:hover::before {
+  transform: translateX(0);
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-2xl);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+/* 现代化按钮样式 */
+.btn-modern {
+  background: var(--brand-gradient);
+  border: none;
+  border-radius: var(--radius-xl);
+  color: white;
+  font-weight: 600;
+  padding: 16px 32px;
+  font-size: 16px;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.btn-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-modern:hover::before {
+  left: 100%;
+}
+
+.btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.btn-modern:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 价格卡片现代化 */
+.pricing-card {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-2xl);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-card.featured {
+  border: 2px solid var(--brand-primary);
+  transform: scale(1.05);
+}
+
+.pricing-card.featured::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--brand-gradient);
+}
+
+.pricing-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-2xl);
+}
+
+.pricing-card.featured:hover {
+  transform: translateY(-8px) scale(1.07);
+}
+
+/* 导航栏现代化 */
+.navbar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.navbar.scrolled {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 现代化图标样式 */
+.icon-modern {
+  width: 64px;
+  height: 64px;
+  background: var(--brand-gradient);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.icon-modern:hover {
+  transform: translateY(-4px) rotate(5deg);
+  box-shadow: var(--shadow-xl);
+}
+
+/* 现代化动画效果 */
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 6s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s ease-out;
+}
+
+/* 现代化滚动动画 */
+@keyframes scroll-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-infinite {
+  animation: scroll-infinite 30s linear infinite;
+}
+
+.animate-scroll-infinite:hover {
+  animation-play-state: paused;
+}
+
+/* 现代化渐变文字 */
+.gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* 现代化分割线 */
+.divider-modern {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+  margin: var(--spacing-2xl) 0;
+}
+
+/* 响应式优化 */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+  
+  .feature-card {
+    padding: var(--spacing-lg);
+  }
+  
+  .pricing-card {
+    padding: var(--spacing-xl);
+  }
+}
+
+@media (max-width: 768px) {
   .container {
     padding: 0 1rem;
   }
@@ -1246,96 +1514,57 @@ export default {
   .feature-grid {
     grid-template-columns: 1fr !important;
   }
-}
-
-/* 确保所有section内容都能正确铺满页面 */
-section {
-  width: 100%;
-}
-
-/* 确保头部导航也能正确显示 */
-header .container {
-  max-width: 100%;
-}
-
-/* 自定义动画效果 */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.6;
+  
+  .pricing-card.featured {
+    transform: none;
   }
-  50% {
-    opacity: 0.9;
+  
+  .pricing-card:hover {
+    transform: translateY(-4px);
   }
-}
-
-.animate-pulse {
-  animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
+  
+  .pricing-card.featured:hover {
+    transform: translateY(-4px);
   }
-  50% {
-    transform: translateY(-10px);
+  
+  .btn-modern {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+  
+  .icon-modern {
+    width: 56px;
+    height: 56px;
   }
 }
 
-.animate-bounce {
-  animation: bounce 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* 水平滚动动画 */
-@keyframes scroll-infinite {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-scroll-infinite {
-  animation: scroll-infinite 30s linear infinite;
-}
-
-/* 鼠标悬停时暂停动画 */
-.animate-scroll-infinite:hover {
-  animation-play-state: paused;
-}
-
-/* 价格方案卡片优化 */
-#pricing .grid {
-  transition: all 0.3s ease;
-}
-
-/* 确保内容在各种屏幕尺寸下都能正确显示 */
-@media (max-width: 1024px) {
+@media (max-width: 640px) {
   .container {
-    padding: 0 2rem;
-  }
-}
-
-@media (max-width: 768px) {
-  /* 优化平板设备上的布局 */
-  #pricing .grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    padding: 0 1rem;
   }
   
-  .hero-content {
-    flex-direction: column;
-    text-align: center;
+  .feature-card {
+    padding: var(--spacing-md);
   }
   
-  .hero-image {
-    margin-top: 2rem;
+  .pricing-card {
+    padding: var(--spacing-lg);
   }
   
   /* 移动端滚动优化 */
   .animate-scroll-infinite {
     animation-duration: 20s;
   }
+  
+  /* 禁用复杂动画以提升性能 */
+  .animate-float-gentle {
+    animation: none;
+  }
+}
+
+/* 确保所有section内容都能正确铺满页面 */
+section {
+  width: 100%;
 }
 
 /* 增加触摸反馈 */
@@ -1349,23 +1578,39 @@ html {
   scroll-behavior: smooth;
 }
 
-/* 确保导航栏在移动端也能正常工作 */
-@media (max-width: 640px) {
-  .nav-container {
-    flex-direction: column;
-    padding: 1rem 0;
+/* 无障碍优化 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .feature-card,
+  .pricing-card {
+    border: 2px solid var(--text-primary);
   }
   
-  .nav-links {
-    flex-direction: column;
-    margin-top: 1rem;
-    width: 100%;
+  .btn-modern {
+    border: 2px solid var(--text-primary);
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .feature-card,
+  .pricing-card {
+    background: rgba(30, 30, 30, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: white;
   }
   
-  .nav-links li {
-    margin: 0.5rem 0;
-    width: 100%;
-    text-align: center;
+  .navbar {
+    background: rgba(30, 30, 30, 0.95);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
   }
 }
 </style>

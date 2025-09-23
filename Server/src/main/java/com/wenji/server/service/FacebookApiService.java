@@ -13,6 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -366,12 +368,20 @@ public class FacebookApiService {
      * 获取Facebook主页的帖子列表
      */
     public List<Map<String, Object>> getPosts(String pageId, String accessToken) {
-        String url = facebookApiBaseUrl + "/" + pageId + "/posts?fields=id,message,created_time,attachments{media{image{url}}}&access_token=" + accessToken;
-        
         try {
-            logger.info("获取Facebook主页帖子列表，URL: {}", url);
+            // 通过URI对象直接构造完整URL，完全绕过Spring的模板解析机制
+            // 这种方式确保Facebook API的嵌套语法不会被Spring解析为模板变量
+            String baseUrl = facebookApiBaseUrl + "/" + pageId + "/posts";
+            String fieldsParam = "fields=id,message,created_time,attachments{media{image{url}}}";
+            String accessTokenParam = "access_token=" + accessToken;
+            String fullUrl = baseUrl + "?" + fieldsParam + "&" + accessTokenParam;
             
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            // 创建URI对象，避免Spring对URL进行解析
+            URI uri = new URI(fullUrl);
+            
+            logger.info("获取Facebook主页帖子列表，URL: {}", fullUrl);
+            
+            ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
@@ -432,6 +442,9 @@ public class FacebookApiService {
                         response.getStatusCode(), response.getBody());
                 return null;
             }
+        } catch (URISyntaxException e) {
+            logger.error("Facebook URL构建语法错误: {}", e.getMessage(), e);
+            return null;
         } catch (Exception e) {
             logger.error("获取Facebook主页帖子列表异常: {}", e.getMessage(), e);
             return null;
@@ -442,12 +455,20 @@ public class FacebookApiService {
      * 获取Facebook帖子详情
      */
     public Map<String, Object> getPostDetails(String postId, String accessToken) {
-        String url = facebookApiBaseUrl + "/" + postId + "?fields=id,message,created_time,attachments{media{image{url}}}&access_token=" + accessToken;
-        
         try {
-            logger.info("获取Facebook帖子详情，URL: {}", url);
+            // 通过URI对象直接构造完整URL，完全绕过Spring的模板解析机制
+            // 这种方式确保Facebook API的嵌套语法不会被Spring解析为模板变量
+            String baseUrl = facebookApiBaseUrl + "/" + postId;
+            String fieldsParam = "fields=id,message,created_time,attachments{media{image{url}}}";
+            String accessTokenParam = "access_token=" + accessToken;
+            String fullUrl = baseUrl + "?" + fieldsParam + "&" + accessTokenParam;
             
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            // 创建URI对象，避免Spring对URL进行解析
+            URI uri = new URI(fullUrl);
+            
+            logger.info("获取Facebook帖子详情，URL: {}", fullUrl);
+            
+            ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
@@ -499,6 +520,9 @@ public class FacebookApiService {
                         response.getStatusCode(), response.getBody());
                 return null;
             }
+        } catch (URISyntaxException e) {
+            logger.error("Facebook URL构建语法错误: {}", e.getMessage(), e);
+            return null;
         } catch (Exception e) {
             logger.error("获取Facebook帖子详情异常: {}", e.getMessage(), e);
             return null;
@@ -542,12 +566,20 @@ public class FacebookApiService {
      * 获取Facebook评论详情
      */
     public Map<String, Object> getCommentDetails(String commentId, String accessToken) {
-        String url = facebookApiBaseUrl + "/" + commentId + "?fields=id,message,created_time,from{name,id,picture{url}}&access_token=" + accessToken;
-        
         try {
-            logger.info("获取Facebook评论详情，URL: {}", url);
+            // 通过URI对象直接构造完整URL，完全绕过Spring的模板解析机制
+            // 这种方式确保Facebook API的嵌套语法不会被Spring解析为模板变量
+            String baseUrl = facebookApiBaseUrl + "/" + commentId;
+            String fieldsParam = "fields=id,message,created_time,from{name,id,picture{url}}";
+            String accessTokenParam = "access_token=" + accessToken;
+            String fullUrl = baseUrl + "?" + fieldsParam + "&" + accessTokenParam;
             
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            // 创建URI对象，避免Spring对URL进行解析
+            URI uri = new URI(fullUrl);
+            
+            logger.info("获取Facebook评论详情，URL: {}", fullUrl);
+            
+            ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
@@ -601,6 +633,9 @@ public class FacebookApiService {
                         response.getStatusCode(), response.getBody());
                 return null;
             }
+        } catch (URISyntaxException e) {
+            logger.error("Facebook URL构建语法错误: {}", e.getMessage(), e);
+            return null;
         } catch (Exception e) {
             logger.error("获取Facebook评论详情异常: {}", e.getMessage(), e);
             return null;

@@ -51,9 +51,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         // 允许的源（使用pattern，支持通配符，兼容allowCredentials=true）
-        config.addAllowedOriginPattern("http://localhost:5173"); // 前端域名 IPv4
-        config.addAllowedOriginPattern("http://[::1]:5173"); // 前端域名 IPv6
-        config.addAllowedOriginPattern("http://127.0.0.1:5173"); // 本地回环地址
+        config.addAllowedOriginPattern("http://localhost:5173"); // 前端域名 IPv4 (实际运行端口)
+        config.addAllowedOriginPattern("http://localhost:5174"); // 前端域名 IPv4
+        config.addAllowedOriginPattern("http://[::1]:5173"); // 前端域名 IPv6 (实际运行端口)
+        config.addAllowedOriginPattern("http://[::1]:5174"); // 前端域名 IPv6
+        config.addAllowedOriginPattern("http://127.0.0.1:5173"); // 本地回环地址 (实际运行端口)
+        config.addAllowedOriginPattern("http://127.0.0.1:5174"); // 本地回环地址
         
         // 允许的请求头
         config.addAllowedHeader("*");
@@ -90,7 +93,7 @@ public class SecurityConfig {
             // 配置请求授权规则
             .authorizeHttpRequests(authorize -> authorize
                 // 允许所有用户访问的端点
-                .requestMatchers("/api/auth/login", "/api/auth/register/**", "/api/auth/send-verification-code", "/api/verify-code/**", "/api/encryption/public-key", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/feishu/**", "/api/auth/captcha", "/api/auth/captcha/verify", "/api/social/facebook/auth-url").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register/**", "/api/auth/send-verification-code", "/api/verify-code/**", "/api/encryption/public-key", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/feishu/**", "/api/auth/captcha", "/api/auth/captcha/verify", "/api/social/facebook/auth-url", "/api/social/facebook/verify-token").permitAll()
                 // 允许Swagger文档访问
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // 其他所有请求都需要认证

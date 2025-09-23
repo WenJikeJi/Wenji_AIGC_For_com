@@ -276,6 +276,40 @@ public class SocialMediaService {
     /**
      * 保存Facebook访问令牌
      */
+    /**
+     * 验证Facebook访问令牌的有效性
+     */
+    public boolean validateFacebookToken(String accessToken) {
+        logger.info("验证Facebook访问令牌有效性");
+        try {
+            return facebookApiService.validateAccessToken(accessToken);
+        } catch (Exception e) {
+            logger.error("验证Facebook访问令牌异常: {}", e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * 验证Facebook令牌是否有权限访问指定页面
+     */
+    public boolean verifyFacebookPageAccess(String accessToken, String pageId) {
+        logger.info("验证Facebook令牌是否有权限访问页面: {}", pageId);
+        try {
+            List<Map<String, Object>> pages = facebookApiService.getUserPages(accessToken);
+            if (pages != null && !pages.isEmpty()) {
+                for (Map<String, Object> page : pages) {
+                    if (page.containsKey("id") && pageId.equals(page.get("id"))) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            logger.error("验证Facebook页面访问权限异常: {}", e.getMessage());
+            return false;
+        }
+    }
+    
     @Transactional
     public void saveFacebookToken(Long userId, String accessToken) {
         try {

@@ -21,7 +21,8 @@ public class WenjiServerApplication {
     public CorsFilter corsFilter() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.addAllowedOriginPattern("http://localhost:5173"); // 前端域名
+        configuration.addAllowedOriginPattern("http://localhost:5173"); // 前端实际运行的域名
+        configuration.addAllowedOriginPattern("http://localhost:5174"); // 之前配置的前端域名
         configuration.addAllowedMethod("*"); // 允许所有HTTP方法
         configuration.addAllowedHeader("*"); // 允许所有请求头
         

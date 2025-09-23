@@ -56,107 +56,35 @@
         </div>
       </div>
       
-      <!-- Token输入方式 -->
+      <!-- Token输入区域 -->
       <div class="mb-6">
-        <h4 class="text-sm font-medium text-gray-700 mb-3">授权方式</h4>
-        <div class="grid grid-cols-1 gap-4">
-          <!-- 手动输入Token（系统Token） -->
-          <div class="p-4 border border-gray-200 rounded-lg">
-            <div class="flex items-start mb-3">
-              <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
-                <i class="fas fa-key"></i>
-              </div>
-              <h5 class="ml-2 text-sm font-medium text-gray-900">手动输入系统Token</h5>
-            </div>
-            <p class="text-xs text-gray-500 mb-3">输入您的Facebook系统访问Token以授权系统访问您的Facebook账户。</p>
-            
-            <div class="space-y-3">
-              <!-- Access Token -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Access Token <span class="text-red-500">*</span></label>
-                <input 
-                  type="text" 
-                  v-model="tokenForm.accessToken" 
-                  placeholder="输入Facebook系统Token..." 
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-              </div>
-              
-              <!-- Token过期时间 -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Token过期时间（可选）</label>
-                <input 
-                  type="date" 
-                  v-model="tokenForm.expiryDate" 
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                <p class="text-xs text-gray-400 mt-1">如果不填写，系统将无法提前预测Token过期</p>
-              </div>
-              
-              <!-- Facebook主页ID -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Facebook主页ID（可选）</label>
-                <input 
-                  type="text" 
-                  v-model="tokenForm.pageId" 
-                  placeholder="输入Facebook主页ID..." 
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                <p class="text-xs text-gray-400 mt-1">如果Token是用户级别的，请指定要管理的Facebook主页ID</p>
-              </div>
-              
-              <!-- 账户名称 -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">账户名称（可选）</label>
-                <input 
-                  type="text" 
-                  v-model="tokenForm.accountName" 
-                  placeholder="为此账户设置一个易识别的名称..." 
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                <p class="text-xs text-gray-400 mt-1">如果不填写，系统将自动获取账户信息</p>
-              </div>
-              
-              <!-- Token验证状态 -->
-              <div v-if="tokenValidationStatus" :class="tokenValidationStatus.isValid ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'" class="p-3 rounded-lg text-sm">
-                {{ tokenValidationStatus.message }}
-              </div>
-              
-              <!-- 操作按钮 -->
-              <div class="flex space-x-3">
-                <button 
-                  class="flex-1 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  @click="validateToken"
-                  :disabled="!tokenForm.accessToken.trim() || isVerifyingToken"
-                >
-                  {{ isVerifyingToken ? '验证中...' : '验证Token' }}
-                </button>
-                <button 
-                  class="flex-1 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  @click="saveToken"
-                  :disabled="!tokenForm.accessToken.trim() || !tokenValidationStatus?.isValid"
-                >
-                  验证并保存
-                </button>
-              </div>
-            </div>
-          </div>
+        <div class="p-4 border border-gray-200 rounded-lg">
+          <h5 class="text-sm font-medium text-gray-900 mb-3">输入Facebook Token</h5>
           
-          <!-- Facebook登录授权 -->
-          <div class="p-4 border border-gray-200 rounded-lg">
-            <div class="flex items-start mb-3">
-              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                <i class="fab fa-facebook-f"></i>
-              </div>
-              <h5 class="ml-2 text-sm font-medium text-gray-900">Facebook登录授权</h5>
+          <div class="space-y-3">
+            <!-- Access Token -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Access Token <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                v-model="tokenInput" 
+                placeholder="输入Facebook Token..." 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
             </div>
-            <p class="text-xs text-gray-500 mb-3">通过Facebook账户直接登录授权，系统将自动获取和管理Token。</p>
+            
+            <!-- Token验证状态 -->
+            <div v-if="tokenValidationStatus" :class="tokenValidationStatus.isValid ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'" class="p-3 rounded-lg text-sm">
+              {{ tokenValidationStatus.message }}
+            </div>
+            
+            <!-- 操作按钮 -->
             <button 
-              class="w-full py-2 bg-white border border-blue-600 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
-              @click="loginWithFacebook"
+              class="w-full py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              @click="saveToken"
+              :disabled="!tokenInput.trim() || isVerifyingToken"
             >
-              <i class="fab fa-facebook-f mr-1"></i>
-              通过Facebook登录
+              {{ isVerifyingToken ? '验证并保存中...' : '验证并保存Token' }}
             </button>
           </div>
         </div>
@@ -204,13 +132,8 @@ export default {
     CustomConfirmModal
   },
   setup() {
-    // Token表单数据
-    const tokenForm = ref({
-      accessToken: '',
-      expiryDate: '',
-      pageId: '',
-      accountName: ''
-    });
+    // Token输入数据
+    const tokenInput = ref('');
     
     const authorizedAccounts = ref([]);
     const showUnbindConfirm = ref(false);
@@ -242,9 +165,9 @@ export default {
       return `有效期至 ${date.toLocaleDateString('zh-CN')}`;
     };
     
-    // 验证Token
-    const validateToken = async () => {
-      if (!tokenForm.value.accessToken.trim()) {
+    // 验证并保存Token
+    const saveToken = async () => {
+      if (!tokenInput.value.trim()) {
         showError('请输入Token');
         return;
       }
@@ -254,82 +177,40 @@ export default {
       
       try {
         // 调用API验证Token
-        const response = await socialMediaAPI.verifyFBToken({
-          token: tokenForm.value.accessToken,
-          pageId: tokenForm.value.pageId
+        const verifyResponse = await socialMediaAPI.verifyFBToken({
+          token: tokenInput.value,
+          pageId: null
         });
         
-        if (response.isValid) {
-          tokenValidationStatus.value = {
-            isValid: true,
-            message: 'Token验证成功！\n已成功连接到Facebook账户，Token有效且具有必要权限。'
-          };
+        if (verifyResponse.isValid) {
+          // 验证成功后保存Token
+          await socialMediaAPI.saveFBSystemToken({
+            token: tokenInput.value,
+            expiryDate: '',
+            pageId: '',
+            accountName: ''
+          });
+          
+          showSuccess('Token保存成功!');
+          
+          // 重置输入
+          tokenInput.value = '';
+          
+          // 刷新授权状态
+          await fetchStatus();
         } else {
           tokenValidationStatus.value = {
             isValid: false,
-            message: 'Token验证失败：' + (response.error || '无效的Token或缺少必要权限')
+            message: 'Token验证失败：' + (verifyResponse.error || '无效的Token或缺少必要权限')
           };
         }
       } catch (error) {
         tokenValidationStatus.value = {
           isValid: false,
-          message: '验证失败：' + error.message
+          message: '操作失败：' + error.message
         };
       } finally {
         isVerifyingToken.value = false;
-      }
-    };
-    
-    // 保存Token
-    const saveToken = async () => {
-      try {
-        await socialMediaAPI.saveFBSystemToken({
-          token: tokenForm.value.accessToken,
-          expiryDate: tokenForm.value.expiryDate,
-          pageId: tokenForm.value.pageId,
-          accountName: tokenForm.value.accountName
-        });
-        
-        showSuccess('系统Token保存成功!');
-        
-        // 重置表单
-        tokenForm.value = {
-          accessToken: '',
-          expiryDate: '',
-          pageId: '',
-          accountName: ''
-        };
-        tokenValidationStatus.value = null;
-        
-        await fetchStatus();
-      } catch (error) {
-        showError('Token保存失败: ' + error.message);
-      }
-    };
-    
-    // 通过Facebook登录
-    const loginWithFacebook = async () => {
-      try {
-        const response = await socialMediaAPI.getFBAuthUrl();
-        // 打开Facebook授权页面
-        window.open(response.data.authUrl, '_blank');
-        
-        // 授权完成后，服务器可能会通过其他方式（如回调）通知前端
-        // 这里我们可以设置一个定时器，定期检查授权状态
-        const checkInterval = setInterval(async () => {
-          await fetchStatus();
-          if (authorizedAccounts.value.length > 0) {
-            clearInterval(checkInterval);
-            showSuccess('Facebook授权成功!');
-          }
-        }, 3000);
-        
-        // 5分钟后自动停止检查
-        setTimeout(() => {
-          clearInterval(checkInterval);
-        }, 5 * 60 * 1000);
-      } catch (error) {
-        showError('获取Facebook授权URL失败: ' + error.message);
       }
     };
     
@@ -363,18 +244,6 @@ export default {
       accountToRemove.value = null;
     };
     
-    // 解绑Facebook账号
-    const unbindFacebook = async () => {
-      try {
-        await socialMediaAPI.unbindFB();
-        showSuccess('Facebook账号解绑成功!');
-        await fetchStatus();
-        showUnbindConfirm.value = false;
-      } catch (error) {
-        showError('解绑失败: ' + error.message);
-      }
-    };
-    
     // 刷新状态
     const refreshStatus = async () => {
       await fetchStatus();
@@ -401,7 +270,6 @@ export default {
       fetchStatus,
       formatExpiryDate,
       saveToken,
-      loginWithFacebook,
       removeAccount,
       confirmRemoveAccount,
       cancelRemove,

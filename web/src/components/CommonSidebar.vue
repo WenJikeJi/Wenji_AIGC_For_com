@@ -1,17 +1,17 @@
 <template>
-  <div class="h-full bg-gray-50 border-r border-gray-200 flex flex-col shadow-lg transition-all duration-300" :class="isCollapsed ? 'w-16' : 'w-48'">
+  <div class="h-full bg-gradient-to-b from-white via-gray-50/80 to-gray-100/60 border-r border-gray-200/50 flex flex-col shadow-xl backdrop-blur-sm transition-all duration-300" :class="isCollapsed ? 'w-16' : 'w-48'">
     <!-- LOGO区域 -->
-    <div class="h-16 px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-center relative">
-      <div v-if="!isCollapsed" class="w-32 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-        <span class="text-white font-bold text-sm tracking-wide">LOGO</span>
+    <div class="h-16 px-4 py-3 border-b border-gray-200/30 bg-gradient-to-r from-white/90 to-gray-50/90 backdrop-blur-md flex items-center justify-center relative">
+      <div v-if="!isCollapsed" class="w-32 h-10 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <span class="text-white font-bold text-sm tracking-wide">AI智能</span>
       </div>
-      <div v-else class="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-        <span class="text-white font-bold text-xs">L</span>
+      <div v-else class="w-8 h-8 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <i class="fas fa-robot text-white text-xs"></i>
       </div>
       <!-- 收缩按钮 -->
       <button 
         @click="toggleSidebar" 
-        class="absolute right-4 p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200"
+        class="absolute right-4 p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-white/60 backdrop-blur-sm transition-all duration-200 hover:shadow-md"
         :title="isCollapsed ? '展开侧边栏' : '收缩侧边栏'"
       >
         <i :class="isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'" class="text-sm"></i>
@@ -19,40 +19,57 @@
     </div>
     
     <!-- 导航区域 -->
-    <nav class="flex-1 px-3 py-3 space-y-1">
+    <nav class="flex-1 px-3 py-4 space-y-2">
       <!-- 数据概览 -->
       <a 
         href="#/data" 
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 group relative"
-        :class="{ 'bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 shadow-sm border border-purple-100': currentHash === '#/data' }"
+        class="flex items-center px-3 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 hover:text-purple-700 transition-all duration-300 group relative overflow-hidden"
+        :class="{ 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 shadow-lg border border-purple-200/50': currentHash === '#/data' }"
         :title="isCollapsed ? '数据概览' : ''"
       >
-        <div v-if="currentHash === '#/data'" class="absolute left-0 top-0 bottom-0 w-1 bg-purple-500 rounded-r"></div>
-        <i class="fas fa-chart-bar text-gray-500 group-hover:text-gray-700 transition-colors" :class="[{ 'text-purple-600': currentHash === '#/data' }, isCollapsed ? 'mx-auto' : 'mr-3']"></i>
-        <span v-if="!isCollapsed" class="truncate">数据概览</span>
+        <div v-if="currentHash === '#/data'" class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-r"></div>
+        <div class="relative z-10 flex items-center w-full">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-300" 
+               :class="currentHash === '#/data' ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-500 group-hover:bg-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 group-hover:text-white'">
+            <i class="fas fa-chart-bar text-sm"></i>
+          </div>
+          <span v-if="!isCollapsed" class="truncate font-medium">数据概览</span>
+        </div>
       </a>
       
       <!-- 社媒管理 -->
       <a 
         href="#/social-media" 
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 group"
-        :class="{ 'bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 shadow-sm border border-purple-100': currentHash === '#/social-media' }"
+        class="flex items-center px-3 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 hover:text-purple-700 transition-all duration-300 group relative overflow-hidden"
+        :class="{ 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 shadow-lg border border-purple-200/50': currentHash === '#/social-media' }"
         :title="isCollapsed ? '社媒管理' : ''"
       >
-        <i class="fas fa-share-alt text-gray-500 group-hover:text-gray-700 transition-colors" :class="[{ 'text-purple-600': currentHash === '#/social-media' }, isCollapsed ? 'mx-auto' : 'mr-3']"></i>
-        <span v-if="!isCollapsed" class="truncate">社媒管理</span>
+        <div v-if="currentHash === '#/social-media'" class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-r"></div>
+        <div class="relative z-10 flex items-center w-full">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-300" 
+               :class="currentHash === '#/social-media' ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-500 group-hover:bg-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 group-hover:text-white'">
+            <i class="fas fa-share-alt text-sm"></i>
+          </div>
+          <span v-if="!isCollapsed" class="truncate font-medium">社媒管理</span>
+        </div>
       </a>
       
       <!-- 用户管理 - 仅超级用户可见 -->
       <a 
         v-if="isSuperUser" 
         href="#/users" 
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 group"
-        :class="{ 'bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 shadow-sm border border-purple-100': currentHash === '#/users' }"
+        class="flex items-center px-3 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 hover:text-purple-700 transition-all duration-300 group relative overflow-hidden"
+        :class="{ 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 shadow-lg border border-purple-200/50': currentHash === '#/users' }"
         :title="isCollapsed ? '用户管理' : ''"
       >
-        <i class="fas fa-users text-gray-500 group-hover:text-gray-700 transition-colors" :class="[{ 'text-purple-600': currentHash === '#/users' }, isCollapsed ? 'mx-auto' : 'mr-3']"></i>
-        <span v-if="!isCollapsed" class="truncate">用户管理</span>
+        <div v-if="currentHash === '#/users'" class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-r"></div>
+        <div class="relative z-10 flex items-center w-full">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-300" 
+               :class="currentHash === '#/users' ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-500 group-hover:bg-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 group-hover:text-white'">
+            <i class="fas fa-users text-sm"></i>
+          </div>
+          <span v-if="!isCollapsed" class="truncate font-medium">用户管理</span>
+        </div>
       </a>
     </nav>
     

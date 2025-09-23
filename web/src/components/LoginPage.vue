@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="w-screen h-screen flex flex-col overflow-hidden animate-page-enter">
     <div class="lg:hidden flex items-center justify-between p-4 bg-white shadow-sm z-10 animate-slide-down">
       <div class="flex items-center cursor-pointer animate-fade-in-up" @click="goToHome" style="animation-delay: 0.2s;">
@@ -2146,5 +2146,238 @@ export default {
 .input-focused {
   transform: scale(1.02);
   transition: transform 0.2s ease-out;
+}
+
+/* ==================== 现代化UI增强样式 ==================== */
+
+/* 增强的玻璃态效果 */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-effect-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 增强的按钮样式 */
+.btn-primary-enhanced {
+  background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  padding: 14px 28px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary-enhanced:hover::before {
+  left: 100%;
+}
+
+.btn-primary-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+}
+
+.btn-primary-enhanced:active {
+  transform: translateY(0);
+}
+
+/* 增强的输入框样式 */
+.input-enhanced {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(139, 92, 246, 0.1);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.input-enhanced:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.input-enhanced::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* 增强的卡片样式 */
+.card-enhanced {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* 标签页样式增强 */
+.tab-enhanced {
+  position: relative;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.tab-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tab-enhanced.active::before {
+  opacity: 1;
+}
+
+.tab-enhanced > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tab-enhanced.active {
+  color: white;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+}
+
+/* 模态框增强样式 */
+.modal-enhanced {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-overlay-enhanced {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+/* 新增动画效果 */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes bg-move {
+  0% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(10px) translateY(-10px); }
+  50% { transform: translateX(-5px) translateY(5px); }
+  75% { transform: translateX(-10px) translateY(-5px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-bg-move {
+  animation: bg-move 20s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* 渐变背景 */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--brand-primary) 0%, transparent 70%);
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .card-enhanced {
+    border-radius: 16px;
+    margin: 16px;
+  }
+  
+  .btn-primary-enhanced {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+  
+  .input-enhanced {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .animate-breathe {
+    animation: none; /* 在小屏幕上禁用动画以提升性能 */
+  }
+  
+  .animate-bg-move {
+    animation: none;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .card-enhanced {
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .input-enhanced {
+    background: rgba(40, 40, 40, 0.95);
+    color: white;
+    border-color: rgba(139, 92, 246, 0.2);
+  }
+  
+  .input-enhanced::placeholder {
+    color: #6b7280;
+  }
+}
+
+/* 无障碍优化 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>

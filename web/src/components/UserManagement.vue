@@ -1227,11 +1227,23 @@ export default {
     
     // Add global click event listener to close user menu when clicking outside
     document.addEventListener('click', this.handleClickOutside);
+    
+    // Add timer to refresh user list every 30 minutes to update countdowns
+    // 30 minutes in milliseconds: 30 * 60 * 1000 = 1800000
+    this.userListRefreshTimer = setInterval(() => {
+      console.log('Auto-refreshing user list to update countdowns');
+      this.loadUsers();
+    }, 1800000);
   },
   
   beforeUnmount() {
     // Remove global click event listener
     document.removeEventListener('click', this.handleClickOutside);
+    
+    // Clear the refresh timer to prevent memory leaks
+    if (this.userListRefreshTimer) {
+      clearInterval(this.userListRefreshTimer);
+    }
   },
   
   methods: {

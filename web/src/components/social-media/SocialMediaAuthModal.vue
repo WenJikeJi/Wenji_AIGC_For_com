@@ -2,436 +2,316 @@
   <!-- 弹窗遮罩 -->
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="$emit('close')">
     <!-- 弹窗主体 -->
-    <div class="bg-white rounded-xl shadow-2xl relative flex flex-col" style="width: 1000px; max-height: 90vh; box-shadow: 0 20px 60px rgba(0,0,0,0.15); border-radius: 16px;" @click.stop>
+    <div class="bg-white rounded-lg shadow-xl relative" style="width: 1000px; max-height: 85vh; overflow-y: auto; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border-radius: 12px;" @click.stop>
       <!-- 关闭按钮 -->
       <button 
         @click="$emit('close')"
-        class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors duration-200 z-20"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
       >
         <i class="fas fa-times text-xl"></i>
       </button>
 
-      <!-- ========== 顶部操作区 ========== -->
-      <div class="px-8 pt-8 pb-6 border-b border-gray-100">
-        <!-- 弹窗标题 -->
-        <div class="mb-6">
-          <h2 class="text-2xl font-bold text-gray-800 mb-2">社交媒体授权管理</h2>
-          <p class="text-gray-600 text-sm">管理您的Facebook、Instagram和TikTok账户授权，确保内容发布正常运行</p>
-        </div>
-
-        <!-- 平台标签栏与操作按钮 -->
-        <div class="flex justify-between items-center">
-          <!-- 左侧：平台切换标签 -->
-          <div class="relative flex space-x-1 bg-gray-100 p-1 rounded-lg">
-            <!-- 滑动指示器 -->
-            <div 
-              class="absolute top-1 bottom-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-md transition-all duration-300 ease-out shadow-lg"
-              :style="getIndicatorStyle()"
-            >
-              <!-- 选中态下划线 -->
-              <div class="absolute bottom-0 left-2 right-2 h-0.5 bg-white rounded-full"></div>
-            </div>
-            
-            <button
-              v-for="(platform, index) in ['facebook', 'instagram', 'tiktok']"
-              :key="platform"
-              @click="activePlatform = platform"
-              :class="[
-                'relative z-10 py-3 px-6 rounded-md font-semibold transition-all duration-300',
-                'min-h-[48px] flex items-center justify-center min-w-[120px]',
-                activePlatform === platform
-                  ? 'text-white'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-              ]"
-            >
-              <i :class="getPlatformIcon(platform)" class="mr-2"></i>
-              {{ getPlatformName(platform) }}
-            </button>
-          </div>
-
-          <!-- 右侧：操作按钮组 -->
-          <div class="flex items-center space-x-3">
-            <!-- 主要操作：添加账号 -->
-            <button
-              v-if="activePlatform === 'facebook'"
-              @click="addFacebookAccount"
-              class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-98 shadow-md"
-            >
-              <i class="fab fa-facebook-f mr-2"></i>
-              添加{{ getPlatformName(activePlatform) }}账号
-            </button>
-            
-            <button
-              v-else-if="activePlatform === 'instagram'"
-              @click="addInstagramAccount"
-              class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-98 shadow-md"
-            >
-              <i class="fab fa-instagram mr-2"></i>
-              添加{{ getPlatformName(activePlatform) }}账号
-            </button>
-            
-            <button
-              v-else-if="activePlatform === 'tiktok'"
-              @click="connectPlatform('tiktok')"
-              class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-98 shadow-md"
-            >
-              <i class="fab fa-tiktok mr-2"></i>
-              添加{{ getPlatformName(activePlatform) }}账号
-            </button>
-            
-            <!-- 辅助操作：手动配置Token -->
-            <button
-              @click="showTokenModal = true"
-              class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md active:scale-98"
-            >
-              <i class="fas fa-key mr-2"></i>
-              手动配置Token
-            </button>
-            
-            <!-- 次要操作：刷新列表 -->
-            <button
-              @click="refreshAccounts"
-              :disabled="isRefreshing"
-              class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-sm active:scale-98 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <i 
-                :class="isRefreshing ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'" 
-                class="mr-1"
-              ></i>
-              {{ isRefreshing ? '刷新中' : '刷新' }}
-            </button>
-          </div>
-        </div>
+      <!-- 弹窗标题 -->
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold text-gray-800 mb-1">社交媒体授权管理</h2>
+        <p class="text-gray-600 text-sm">管理您的Facebook、Instagram和TikTok账户授权，确保内容发布正常运行</p>
       </div>
 
-      <!-- ========== 中间引导/列表区 ========== -->
-      <div class="flex-1 px-8 py-6 overflow-hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full flex flex-col" style="min-height: 400px;">
-          <!-- 统一表格头部 -->
-          <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 sticky top-0 z-10">
-            <div class="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-semibold text-gray-700">
-              <div class="col-span-2">账户信息</div>
-              <div>类型</div>
-              <div>状态</div>
-              <div>粉丝数</div>
-              <div>最后同步时间</div>
-              <div class="text-center">操作</div>
-            </div>
-          </div>
-          
-          <!-- 表格内容区域 -->
-           <div class="flex-1 overflow-y-auto custom-scrollbar">
-             
-             <!-- 空状态显示 -->
-             <div v-if="currentPlatformAccounts.length === 0" class="h-full flex items-center justify-center p-8 fade-in-up">
-               <div class="text-center max-w-md mx-auto">
-                 <!-- 动态插图 -->
-                 <div class="mb-8 relative">
-                   <div class="w-24 h-24 mx-auto mb-4 relative">
-                     <!-- 平台图标背景 -->
-                     <div class="w-full h-full rounded-full bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center shadow-lg breathe-animation">
-                       <i :class="getPlatformIcon(activePlatform)" :style="{ color: getPlatformColor(activePlatform) }" class="text-4xl"></i>
-                     </div>
-                     <!-- 连接动效元素 -->
-                     <div class="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md animate-bounce">
-                       <i class="fas fa-link text-white text-sm"></i>
-                     </div>
-                   </div>
+      <!-- 平台切换标签 -->
+       <div class="relative flex space-x-1 mb-4 bg-gray-100 p-1 rounded-lg">
+         <!-- 滑动指示器 -->
+         <div 
+           class="absolute top-1 bottom-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-md transition-all duration-300 ease-out shadow-lg"
+           :style="getIndicatorStyle()"
+         ></div>
+         
+         <button
+           v-for="(platform, index) in ['facebook', 'instagram', 'tiktok']"
+           :key="platform"
+           @click="activePlatform = platform"
+           :class="[
+             'relative z-10 flex-1 py-3 px-6 rounded-md font-medium transition-all duration-300',
+             'min-h-[48px] flex items-center justify-center',
+             activePlatform === platform
+               ? 'text-white'
+               : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+           ]"
+         >
+           <i :class="getPlatformIcon(platform)" class="mr-2"></i>
+           {{ getPlatformName(platform) }}
+         </button>
+       </div>
+
+      <!-- 中部：操作栏 -->
+       <div class="flex justify-between items-center mb-4">
+         <div class="flex space-x-3">
+           <button
+             v-if="activePlatform === 'facebook'"
+             @click="addFacebookAccount"
+             class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-103 hover:shadow-lg active:scale-98 text-sm"
+           >
+             <i class="fab fa-facebook-f mr-2"></i>
+             添加Facebook账号
+           </button>
+           
+           <button
+             v-if="activePlatform === 'instagram'"
+             @click="addInstagramAccount"
+             class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-103 hover:shadow-lg active:scale-98 text-sm"
+           >
+             <i class="fab fa-instagram mr-2"></i>
+             添加Instagram账号
+           </button>
+           
+           <button
+             v-if="activePlatform === 'tiktok'"
+             @click="connectPlatform('tiktok')"
+             class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-103 hover:shadow-lg active:scale-98 text-sm"
+           >
+             <i class="fab fa-tiktok mr-2"></i>
+             添加TikTok账号
+           </button>
+           
+           <button
+             @click="refreshList"
+             class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-103 hover:shadow-md active:scale-98 border border-gray-300 text-sm"
+           >
+             <i class="fas fa-sync-alt mr-2"></i>
+             刷新列表
+           </button>
+         </div>
+         
+         <button
+           @click="showTokenModal = true"
+           class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-103 hover:shadow-lg active:scale-98 text-sm"
+         >
+           <i class="fas fa-key mr-2"></i>
+           手动配置Token
+         </button>
+       </div>
+
+       <!-- 下部：账号列表 -->
+       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" style="min-height: 300px;">
+         <!-- 统一表格头部 -->
+         <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 sticky top-0 z-10">
+           <div class="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-semibold text-gray-700">
+             <div class="col-span-2">账户信息</div>
+             <div>类型</div>
+             <div>状态</div>
+             <div>粉丝数</div>
+             <div>最后同步时间</div>
+             <div class="text-center">操作</div>
+           </div>
+         </div>
+         
+         <!-- 表格内容区域 -->
+         <div class="overflow-y-auto" style="height: 300px;">
+           
+           <!-- 表格内容 -->
+           <div class="divide-y divide-gray-100">
+             <div 
+               v-for="account in currentPlatformAccounts" 
+               :key="account.id"
+               :data-account-id="account.id"
+               class="grid grid-cols-7 gap-4 px-6 py-3 hover:bg-gray-50 transition-all duration-200"
+             >
+               <!-- 账户信息 -->
+               <div class="col-span-2 flex items-center">
+                 <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3 overflow-hidden shadow-sm">
+                   <img 
+                     v-if="account.avatar"
+                     :src="account.avatar"
+                     :alt="account.name"
+                     class="w-full h-full object-cover"
+                   >
+                   <i 
+                     v-else
+                     :class="getPlatformIcon(activePlatform)"
+                     class="text-gray-400 text-base"
+                   ></i>
                  </div>
-                 
-                 <!-- 文字内容 -->
-                 <div class="mb-8">
-                   <h3 class="text-subtitle mb-3">
-                     还没有 {{ getPlatformName(activePlatform) }} 账户
-                   </h3>
-                   <p class="text-body mb-6 leading-relaxed">
-                     连接您的 {{ getPlatformName(activePlatform) }} 账户，开始管理社交媒体内容，<br>
-                     自动发布、数据分析、粉丝互动一站式解决
-                   </p>
+                 <div>
+                   <p class="text-sm font-semibold text-gray-900">{{ account.name }}</p>
+                   <p class="text-xs text-gray-500">{{ account.username || account.id }}</p>
+                 </div>
+               </div>
+               
+               <!-- 类型 -->
+               <div class="flex items-center">
+                 <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                   {{ account.type || '个人' }}
+                 </span>
+               </div>
+               
+               <!-- 状态 -->
+               <div class="flex items-center">
+                 <div class="group relative">
+                   <span 
+                     class="px-3 py-1 text-xs font-semibold rounded-full flex items-center cursor-help transition-all duration-200 hover:shadow-md"
+                     :class="getStatusClass(account.status)"
+                   >
+                     <i :class="getStatusIcon(account.status)" class="mr-1"></i>
+                     {{ getStatusText(account.status) }}
+                   </span>
                    
-                   <!-- 连接方式说明 -->
-                   <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-6 text-left">
-                     <h4 class="text-subtitle mb-4 flex items-center">
-                       <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                       两种连接方式
-                     </h4>
-                     <div class="space-y-3">
-                       <div class="flex items-start">
-                         <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">1</div>
-                         <div>
-                           <div class="flex items-center mb-1">
-                             <i class="fas fa-shield-alt text-blue-500 mr-2 text-sm"></i>
-                             <span class="text-body font-medium">OAuth 自动授权</span>
-                             <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">推荐</span>
-                           </div>
-                           <p class="text-caption">安全便捷，一键完成授权连接</p>
-                         </div>
-                       </div>
-                       <div class="flex items-start">
-                         <div class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">2</div>
-                         <div>
-                           <div class="flex items-center mb-1">
-                             <i class="fas fa-key text-green-500 mr-2 text-sm"></i>
-                             <span class="text-body font-medium">手动配置 Token</span>
-                           </div>
-                           <p class="text-caption">适用于企业账户或特殊权限需求</p>
-                         </div>
-                       </div>
-                     </div>
+                   <!-- Tooltip -->
+                   <div 
+                     v-if="account.status === 'limited'"
+                     class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10"
+                   >
+                     缺少必要权限，点击"修复权限"重新授权
+                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                    </div>
-                 </div>
-                 
-                 <!-- 操作按钮组 -->
-                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                   <button 
-                     @click="connectAccount"
-                     class="btn-primary px-6 py-3 text-sm font-medium hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center"
+                   
+                   <div 
+                     v-else-if="account.status === 'connected'"
+                     class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10"
                    >
-                     <i class="fas fa-plug mr-2"></i>
-                     自动连接 {{ getPlatformName(activePlatform) }}
-                   </button>
-                   <button 
-                     @click="showTokenConfig = true"
-                     class="btn-secondary px-6 py-3 text-sm font-medium hover:scale-105 transition-all duration-300 flex items-center justify-center"
-                   >
-                     <i class="fas fa-key mr-2"></i>
-                     手动配置 Token
-                   </button>
-                 </div>
-                 
-                 <!-- 帮助提示 -->
-                 <div class="mt-8 pt-6 border-t border-gray-200">
-                   <div class="flex items-center justify-center space-x-6 text-caption">
-                     <a href="#" class="hover:text-blue-500 transition-colors duration-200 flex items-center hover:underline">
-                       <i class="fas fa-question-circle mr-1"></i>
-                       连接帮助
-                     </a>
-                     <a href="#" class="hover:text-blue-500 transition-colors duration-200 flex items-center hover:underline">
-                       <i class="fas fa-book mr-1"></i>
-                       使用教程
-                     </a>
-                     <a href="#" class="hover:text-blue-500 transition-colors duration-200 flex items-center hover:underline">
-                       <i class="fas fa-headset mr-1"></i>
-                       联系客服
-                     </a>
+                     账户已正常连接，可以正常使用
+                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                    </div>
                  </div>
                </div>
+               
+               <!-- 粉丝数 -->
+               <div class="flex items-center">
+                 <span class="text-sm font-medium text-gray-900">{{ formatFollowers(account.followers) }}</span>
+               </div>
+               
+               <!-- 最后同步时间 -->
+               <div class="flex items-center">
+                 <span class="text-sm text-gray-600">{{ formatLastSync(account.lastSync) }}</span>
+               </div>
+               
+               <!-- 操作 -->
+               <div class="flex items-center justify-center space-x-1">
+                 <!-- 已连接状态的操作按钮 -->
+                 <template v-if="account.status === 'connected'">
+                   <div class="group relative">
+                     <button 
+                       @click="reauthorizeAccount(account.id)"
+                       class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="重新授权"
+                     >
+                       <i class="fas fa-key text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       重新授权
+                     </div>
+                   </div>
+                   <div class="group relative">
+                     <button 
+                       @click="editAccount(account.id)"
+                       class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="编辑"
+                     >
+                       <i class="fas fa-edit text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       编辑
+                     </div>
+                   </div>
+                   <div class="group relative">
+                     <button 
+                       @click="removeAccount(account.id)"
+                       class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="移除"
+                     >
+                       <i class="fas fa-trash text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       移除
+                     </div>
+                   </div>
+                 </template>
+                 
+                 <!-- 权限受限状态的操作按钮 -->
+                 <template v-else-if="account.status === 'limited'">
+                   <div class="group relative">
+                     <button 
+                       @click="reauthorizeAccount(account.id)"
+                       class="p-2 text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98 shadow-md hover:shadow-lg"
+                       title="修复权限"
+                     >
+                       <i class="fas fa-exclamation-triangle text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       修复权限
+                     </div>
+                   </div>
+                   <div class="group relative">
+                     <button 
+                       @click="editAccount(account.id)"
+                       class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="编辑"
+                     >
+                       <i class="fas fa-edit text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       编辑
+                     </div>
+                   </div>
+                   <div class="group relative">
+                     <button 
+                       @click="removeAccount(account.id)"
+                       class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="移除"
+                     >
+                       <i class="fas fa-trash text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       移除
+                     </div>
+                   </div>
+                 </template>
+                 
+                 <!-- 其他状态的默认操作按钮 -->
+                 <template v-else>
+                   <div class="group relative">
+                     <button 
+                       @click="syncAccount(account.id)"
+                       class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="同步账户"
+                     >
+                       <i class="fas fa-sync-alt text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       同步账户
+                     </div>
+                   </div>
+                   <div class="group relative">
+                     <button 
+                       @click="editAccount(account.id)"
+                       class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="编辑"
+                     >
+                       <i class="fas fa-edit text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       编辑
+                     </div>
+                   </div>
+                   <div class="group relative">
+                     <button 
+                       @click="removeAccount(account.id)"
+                       class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
+                       title="移除"
+                     >
+                       <i class="fas fa-trash text-sm"></i>
+                     </button>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                       移除
+                     </div>
+                   </div>
+                 </template>
+               </div>
              </div>
              
-             <!-- 表格内容 -->
-             <div v-else class="divide-y divide-gray-100 fade-in-up">
-              <div 
-                v-for="account in currentPlatformAccounts" 
-                :key="account.id"
-                :data-account-id="account.id"
-                class="grid grid-cols-7 gap-4 px-6 py-4 hover:bg-gray-50 transition-all duration-200 hover:shadow-sm group"
-              >
-                <!-- 账户信息 -->
-                <div class="col-span-2 flex items-center">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mr-4 overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 ring-2 ring-white">
-                    <img 
-                      v-if="account.avatar"
-                      :src="account.avatar"
-                      :alt="account.name"
-                      class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                    >
-                    <i 
-                      v-else
-                      :class="getPlatformIcon(activePlatform)"
-                      :style="{ color: getPlatformColor(activePlatform) }"
-                      class="text-lg opacity-80"
-                    ></i>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <p class="text-body font-semibold truncate">{{ account.name }}</p>
-                    <p class="text-caption truncate">{{ account.username || account.id }}</p>
-                  </div>
-                </div>
-                
-                <!-- 类型 -->
-                <div class="flex items-center">
-                  <span class="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 rounded-full border border-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
-                    {{ account.type || '个人' }}
-                  </span>
-                </div>
-                
-                <!-- 状态 -->
-                <div class="flex items-center">
-                  <div class="group/status relative">
-                    <span 
-                      class="px-3 py-1.5 text-xs font-semibold rounded-full flex items-center cursor-help transition-all duration-200 hover:shadow-md hover:scale-105"
-                      :class="getStatusClass(account.status)"
-                    >
-                      <i :class="getStatusIcon(account.status)" class="mr-1.5 text-xs"></i>
-                      {{ getStatusText(account.status) }}
-                    </span>
-                    
-                    <!-- Tooltip -->
-                    <div 
-                      v-if="account.status === 'limited'"
-                      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/status:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
-                    >
-                      缺少必要权限，点击"修复权限"重新授权
-                      <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                    </div>
-                    
-                    <div 
-                      v-else-if="account.status === 'connected'"
-                      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/status:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-30 shadow-xl"
-                    >
-                      账户已正常连接，可以正常使用
-                      <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- 粉丝数 -->
-                <div class="flex items-center">
-                  <div class="flex items-center space-x-1">
-                    <i class="fas fa-users text-gray-400 text-xs"></i>
-                    <span class="text-body font-medium">{{ formatFollowers(account.followers) }}</span>
-                  </div>
-                </div>
-                
-                <!-- 最后同步时间 -->
-                <div class="flex items-center">
-                  <div class="flex items-center space-x-1">
-                    <i class="fas fa-clock text-gray-400 text-xs"></i>
-                    <span class="text-caption">{{ formatLastSync(account.lastSync) }}</span>
-                  </div>
-                </div>
-                
-                <!-- 操作 -->
-                <div class="flex items-center justify-center space-x-1">
-                  <!-- 已连接状态的操作按钮 -->
-                  <template v-if="account.status === 'connected'">
-                    <div class="group/btn relative opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-                      <button 
-                        @click="reauthorizeAccount(account.id)"
-                        class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 hover:shadow-md"
-                        title="重新授权"
-                      >
-                        <i class="fas fa-key text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
-                        重新授权
-                      </div>
-                    </div>
-                    <div class="group/btn relative opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-                      <button 
-                        @click="editAccount(account.id)"
-                        class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 hover:shadow-md"
-                        title="编辑"
-                      >
-                        <i class="fas fa-edit text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
-                        编辑
-                      </div>
-                    </div>
-                    <div class="group/btn relative opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-                      <button 
-                        @click="removeAccount(account.id)"
-                        class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 hover:shadow-md"
-                        title="移除"
-                      >
-                        <i class="fas fa-trash text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
-                        移除
-                      </div>
-                    </div>
-                  </template>
-                  
-                  <!-- 权限受限状态的操作按钮 -->
-                  <template v-else-if="account.status === 'limited'">
-                    <div class="group relative">
-                      <button 
-                        @click="reauthorizeAccount(account.id)"
-                        class="p-2 text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98 shadow-md hover:shadow-lg"
-                        title="修复权限"
-                      >
-                        <i class="fas fa-exclamation-triangle text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                        修复权限
-                      </div>
-                    </div>
-                    <div class="group relative">
-                      <button 
-                        @click="editAccount(account.id)"
-                        class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
-                        title="编辑"
-                      >
-                        <i class="fas fa-edit text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                        编辑
-                      </div>
-                    </div>
-                    <div class="group relative">
-                      <button 
-                        @click="removeAccount(account.id)"
-                        class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
-                        title="移除"
-                      >
-                        <i class="fas fa-trash text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                        移除
-                      </div>
-                    </div>
-                  </template>
-                  
-                  <!-- 其他状态的默认操作按钮 -->
-                  <template v-else>
-                    <div class="group relative">
-                      <button 
-                        @click="syncAccount(account.id)"
-                        class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
-                        title="同步账户"
-                      >
-                        <i class="fas fa-sync-alt text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                        同步账户
-                      </div>
-                    </div>
-                    <div class="group relative">
-                      <button 
-                        @click="editAccount(account.id)"
-                        class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
-                        title="编辑"
-                      >
-                        <i class="fas fa-edit text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                        编辑
-                      </div>
-                    </div>
-                    <div class="group relative">
-                      <button 
-                        @click="removeAccount(account.id)"
-                        class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-98"
-                        title="移除"
-                      >
-                        <i class="fas fa-trash text-sm"></i>
-                      </button>
-                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                        移除
-                      </div>
-                    </div>
-                  </template>
-                </div>
-              </div>
-            </div>
-             
              <!-- 空状态 -->
-             <div v-if="currentPlatformAccounts.length === 0" class="px-6 py-16 text-center flex flex-col items-center justify-center" style="height: 400px;">
+             <div v-if="currentPlatformAccounts.length === 0" class="px-6 py-6 text-center flex flex-col items-center justify-center" style="height: 240px;">
                <!-- SVG插图 -->
-               <div class="mb-8">
-                 <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-300">
+               <div class="mb-6">
+                 <svg width="80" height="80" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-300">
                    <!-- 背景圆 -->
                    <circle cx="60" cy="60" r="50" fill="currentColor" opacity="0.1"/>
                    
@@ -458,57 +338,28 @@
                </div>
                
                <!-- 标题和描述 -->
-               <div class="mb-8">
-                 <h3 class="text-xl font-semibold text-gray-700 mb-3">
+               <div class="mb-6">
+                 <h3 class="text-lg font-semibold text-gray-700 mb-2">
                    还没有{{ getPlatformName(activePlatform) }}账户
                  </h3>
-                 <p class="text-gray-500 leading-relaxed max-w-md mx-auto mb-4">
-                   连接您的{{ getPlatformName(activePlatform) }}账户，开始管理社交媒体内容，
-                   <br>让您的品牌在社交平台上发光发热
+                 <p class="text-sm text-gray-500 leading-relaxed max-w-sm mx-auto">
+                   连接您的{{ getPlatformName(activePlatform) }}账户，开始管理社交媒体内容，让您的品牌在社交平台上发光发热
                  </p>
-                 
-                 <!-- 连接方式说明 -->
-                 <div class="bg-gray-50 rounded-lg p-4 max-w-lg mx-auto mb-6">
-                   <h4 class="text-sm font-medium text-gray-800 mb-3 flex items-center">
-                     <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
-                     两种连接方式
-                   </h4>
-                   <div class="space-y-3 text-sm text-gray-600">
-                     <div class="flex items-start">
-                       <div class="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                         <span class="text-blue-600 font-semibold text-xs">1</span>
-                       </div>
-                       <div>
-                         <p class="font-medium text-gray-700">自动授权（推荐）</p>
-                         <p class="text-xs">点击"连接账户"按钮，系统将引导您完成OAuth授权流程</p>
-                       </div>
-                     </div>
-                     <div class="flex items-start">
-                       <div class="flex-shrink-0 w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                         <span class="text-gray-600 font-semibold text-xs">2</span>
-                       </div>
-                       <div>
-                         <p class="font-medium text-gray-700">手动配置Token</p>
-                         <p class="text-xs">如果自动授权失败，可以手动输入访问令牌</p>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
                </div>
                
                <!-- 操作按钮组 -->
-               <div class="flex flex-col sm:flex-row gap-3">
+               <div class="flex flex-col sm:flex-row gap-2">
                  <button 
                    @click="connectPlatform(activePlatform)"
-                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-103 active:scale-98"
+                   class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-103 active:scale-98 text-sm"
                  >
-                   <i class="fas fa-link mr-2"></i>
-                   自动连接{{ getPlatformName(activePlatform) }}
+                   <i class="fas fa-plus mr-2"></i>
+                   连接{{ getPlatformName(activePlatform) }}账户
                  </button>
                  
                  <button 
                    @click="showTokenModal = true"
-                   class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 border border-gray-300 hover:border-gray-400"
+                   class="inline-flex items-center px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 border border-gray-300 hover:border-gray-400 text-sm"
                  >
                    <i class="fas fa-key mr-2"></i>
                    手动配置Token
@@ -516,86 +367,65 @@
                </div>
                
                <!-- 帮助提示 -->
-               <div class="mt-8 space-y-2">
-                 <div class="text-xs text-gray-400">
-                   <p>连接遇到问题？</p>
-                 </div>
-                 <div class="flex flex-wrap justify-center gap-4 text-xs">
-                   <a href="#" class="text-blue-500 hover:text-blue-600 underline flex items-center">
-                     <i class="fas fa-book mr-1"></i>
-                     查看连接指南
-                   </a>
-                   <a href="#" class="text-blue-500 hover:text-blue-600 underline flex items-center">
-                     <i class="fas fa-question-circle mr-1"></i>
-                     常见问题
-                   </a>
-                   <a href="#" class="text-blue-500 hover:text-blue-600 underline flex items-center">
-                     <i class="fas fa-headset mr-1"></i>
-                     联系客服
-                   </a>
-                 </div>
+               <div class="mt-4 text-xs text-gray-400">
+                 <p>需要帮助？查看我们的 
+                   <a href="#" class="text-blue-500 hover:text-blue-600 underline">连接指南</a>
+                 </p>
                </div>
              </div>
            </div>
          </div>
        </div>
 
-      <!-- ========== 底部状态区 ========== -->
-      <div class="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-          <!-- 左侧：平台连接状态 -->
-          <div class="flex items-center space-x-6">
-            <div class="flex items-center">
-              <i :class="getPlatformIcon(activePlatform)" class="text-lg mr-2" :style="{ color: getPlatformColor(activePlatform) }"></i>
-              <span class="text-sm font-medium text-gray-700">{{ getPlatformName(activePlatform) }}:</span>
-              <span 
-                class="ml-2 text-sm font-semibold transition-colors duration-200"
-                :class="connectedCount > 0 ? getPlatformColor(activePlatform) : 'text-gray-400'"
-              >
-                {{ connectedCount }} 个已连接
-              </span>
-            </div>
-            
-            <!-- 总体状态指示 -->
-            <div class="flex items-center text-xs text-gray-500">
-              <div class="w-2 h-2 rounded-full mr-2" :class="connectedCount > 0 ? 'bg-green-400' : 'bg-gray-300'"></div>
-              {{ connectedCount > 0 ? '运行正常' : '等待连接' }}
-            </div>
-          </div>
-          
-          <!-- 右侧：操作按钮组 -->
-          <div class="flex items-center space-x-3">
-            <button 
-              @click="closeModal"
-              class="px-5 py-2.5 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium text-sm"
+      <!-- 底部：状态统计和操作按钮 -->
+      <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+        <!-- 统计信息 -->
+        <div class="flex items-center space-x-4">
+          <div class="text-sm text-gray-600">
+            <span class="font-semibold">{{ getPlatformName(activePlatform) }}</span>: 
+            <span class="text-green-600 font-medium">{{ connectedCount }} 个已连接</span>
+            <span 
+              v-if="pendingCount > 0" 
+              @click="scrollToPendingAccount"
+              class="text-orange-600 font-medium ml-2 cursor-pointer hover:text-orange-700 hover:underline transition-all duration-200"
             >
-              关闭
-            </button>
-            <button 
-              @click="syncAllAccounts"
-              :disabled="isSyncing || connectedCount === 0"
-              class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm flex items-center min-w-[140px] justify-center"
-            >
-              <i 
-                :class="isSyncing ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'" 
-                class="mr-2 text-sm"
-              ></i>
-              {{ isSyncing ? '同步中...' : '同步所有账户' }}
-            </button>
+              {{ pendingCount }} 个待处理
+            </span>
           </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex space-x-3">
+          <button 
+            type="button"
+            @click="$emit('close')"
+            class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200 text-sm"
+          >
+            关闭
+          </button>
+          <button 
+            type="button"
+            @click="syncAllAccounts"
+            :disabled="isSyncing || currentPlatformAccounts.length === 0"
+            class="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-sm hover:shadow-md text-sm"
+          >
+            <i v-if="isSyncing" class="fas fa-spinner fa-spin mr-2"></i>
+            <i v-else class="fas fa-sync-alt mr-2"></i>
+            {{ isSyncing ? '同步中...' : '同步所有账户' }}
+          </button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Token手动配置弹窗 -->
-  <TokenConfigModal
-    v-if="showTokenModal"
-    :platform="activePlatform"
-    @close="showTokenModal = false"
-    @success="onTokenConfigSuccess"
-  />
-</template>
+   <TokenConfigModal
+     v-if="showTokenModal"
+     :platform="activePlatform"
+     @close="showTokenModal = false"
+     @success="onTokenConfigSuccess"
+   />
+ </template>
  
  <script setup>
  import { ref, computed, onMounted } from 'vue'
@@ -642,15 +472,6 @@ const getPlatformName = (platform) => {
     tiktok: 'TikTok'
   }
   return names[platform] || platform
-}
-
-const getPlatformColor = (platform) => {
-  const colors = {
-    facebook: 'text-blue-600',
-    instagram: 'text-pink-600',
-    tiktok: 'text-gray-800'
-  }
-  return colors[platform] || 'text-gray-600'
 }
 
 const getIndicatorStyle = () => {
@@ -1001,10 +822,6 @@ const scrollToPendingAccount = () => {
   }
 }
 
-const closeModal = () => {
-  emit('close')
-}
-
 // 定义 emits
 const emit = defineEmits(['close'])
 
@@ -1016,108 +833,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ========== 色彩系统 ========== */
-:root {
-  /* 品牌主色 - 蓝紫渐变 */
-  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --primary-blue: #3b82f6;
-  --primary-purple: #8b5cf6;
-  --primary-hover: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  
-  /* 辅助色 - 绿色 */
-  --secondary-green: #10b981;
-  --secondary-green-hover: #059669;
-  
-  /* 中性色系 */
-  --neutral-gray-50: #f9fafb;
-  --neutral-gray-100: #f3f4f6;
-  --neutral-gray-200: #e5e7eb;
-  --neutral-gray-300: #d1d5db;
-  --neutral-gray-400: #9ca3af;
-  --neutral-gray-500: #6b7280;
-  --neutral-gray-600: #4b5563;
-  --neutral-gray-700: #374151;
-  --neutral-gray-800: #1f2937;
-  
-  /* 状态色 */
-  --success-green: #10b981;
-  --warning-yellow: #f59e0b;
-  --error-red: #ef4444;
-  
-  /* 阴影系统 */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* ========== 表格样式 ========== */
-.table-container {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.table-container table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table-container th {
-  background: var(--neutral-gray-50);
-  color: var(--neutral-gray-700);
-  font-weight: 600;
-  font-size: 14px;
-  padding: 16px;
-  text-align: left;
-  border-bottom: 1px solid var(--neutral-gray-200);
-}
-
-.table-container td {
-  padding: 16px;
-  border-bottom: 1px solid var(--neutral-gray-100);
-  vertical-align: middle;
-}
-
-.table-container tr:hover {
-  background-color: var(--neutral-gray-50);
-  transition: background-color 0.2s ease;
-}
-
-.table-container tr:last-child td {
-  border-bottom: none;
-}
-
-/* ========== 状态标签样式 ========== */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-badge.connected {
-  background: linear-gradient(135deg, #dcfdf4 0%, #a7f3d0 100%);
-  color: var(--success-green);
-  border: 1px solid #a7f3d0;
-}
-
-.status-badge.limited {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  color: var(--warning-yellow);
-  border: 1px solid #fde68a;
-}
-
-.status-badge.error {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: var(--error-red);
-  border: 1px solid #fecaca;
-}
-
 /* 表格样式优化 */
 .grid-cols-6 {
   display: grid;
@@ -1167,226 +882,7 @@ onMounted(() => {
   }
 }
 
-/* ========== 高亮动画 ========== */
-@keyframes highlight {
-  0% {
-    background-color: #fff7ed;
-    transform: scale(1);
-  }
-  50% {
-    background-color: #fed7aa;
-    transform: scale(1.02);
-  }
-  100% {
-    background-color: #fff3e0;
-    transform: scale(1);
-  }
-}
-
 .text-red-800 {
   color: #e74c3c;
-}
-
-/* ========== 滚动条优化 ========== */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--neutral-gray-300) transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--neutral-gray-300);
-  border-radius: 3px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  opacity: 1;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--neutral-gray-400);
-}
-
-/* ========== 按钮交互优化 ========== */
-.btn-primary {
-  background: var(--primary-gradient);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-  background: var(--secondary-green);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-secondary:hover {
-  background: var(--secondary-green-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-neutral {
-  background: var(--neutral-gray-100);
-  color: var(--neutral-gray-600);
-  border: 1px solid var(--neutral-gray-200);
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-neutral:hover {
-  background: var(--neutral-gray-200);
-  color: var(--neutral-gray-800);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-/* ========== 微动画效果 ========== */
-@keyframes breathe {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
-.breathe-animation {
-  animation: breathe 3s ease-in-out infinite;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-/* ========== 字体层级系统 ========== */
-.text-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--neutral-gray-800);
-  line-height: 1.4;
-}
-
-.text-subtitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--neutral-gray-700);
-  line-height: 1.5;
-}
-
-.text-body {
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--neutral-gray-600);
-  line-height: 1.6;
-}
-
-.text-caption {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--neutral-gray-500);
-  line-height: 1.5;
-}
-
-/* ========== 间距系统 ========== */
-.spacing-xs { margin: 4px; }
-.spacing-sm { margin: 8px; }
-.spacing-md { margin: 16px; }
-.spacing-lg { margin: 24px; }
-.spacing-xl { margin: 32px; }
-
-.padding-xs { padding: 4px; }
-.padding-sm { padding: 8px; }
-.padding-md { padding: 16px; }
-.padding-lg { padding: 24px; }
-.padding-xl { padding: 32px; }
-
-/* ========== 自定义滚动条 ========== */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-
-.custom-scrollbar:hover {
-  scrollbar-color: #cbd5e1 transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 3px;
-  transition: background-color 0.2s ease;
-}
-
-.custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
-}
-
-/* ========== 呼吸动画 ========== */
-.breathe-animation {
-  animation: breathe 3s ease-in-out infinite;
-}
-
-@keyframes breathe {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
 }
 </style>

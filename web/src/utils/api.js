@@ -4,7 +4,7 @@ import { getAuthInfo, getAuthToken } from './auth';
 
 // 多后端服务配置
 const API_CONFIG = {
-  java: 'http://localhost:8080',
+  java: 'http://localhost:8081',
   python: 'http://localhost:8000'
 }
 

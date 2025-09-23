@@ -8,6 +8,28 @@
     <title>文际AIGC社交媒体管理平台</title>
     <!-- 引入JSEncrypt库用于RSA加密 -->
     <script src="https://cdn.jsdelivr.net/npm/jsencrypt@3.3.2/bin/jsencrypt.min.js"></script>
+    <!-- 引入Facebook SDK脚本 -->
+    <script>
+      // Facebook SDK 异步加载配置
+      window.fbAsyncInit = function() {
+        // 这个配置会在facebook-sdk.js中被FB.init覆盖
+        FB.init({
+          appId            : '', // 应用ID将在facebook-sdk.js中从环境变量获取
+          autoLogAppEvents : true,
+          xfbml            : false,
+          version          : 'v23.0'
+        });
+      };
+
+      // 动态加载Facebook SDK脚本
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/zh_CN/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
   </head>
   <body>
     <div id="app"></div>

@@ -31,6 +31,25 @@
             输入您的{{ getPlatformName(platform) }}访问令牌以授权系统访问您的账户
           </p>
           
+          <!-- 可选字段说明 -->
+          <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4 mb-4">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <i class="fas fa-magic text-purple-500 mt-0.5"></i>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-purple-900 mb-2">💡 关于可选字段</h3>
+                <p class="text-sm text-purple-800 mb-2">
+                  除了必填的Token外，我们还提供了一些<span class="font-semibold">可选增强项</span>，帮助您获得更好的使用体验：
+                </p>
+                <div class="text-xs text-purple-700 space-y-1">
+                  <p>• 既支持<span class="font-medium">纯Token快速关联</span>，也允许您补充信息让后续管理更便捷</p>
+                  <p>• 这些字段可根据实际需求选择填写，让系统更智能地为您服务</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <!-- 使用说明卡片 -->
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <div class="flex items-start">
@@ -110,9 +129,16 @@
               :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.expiryDate }"
             >
             <p v-if="errors.expiryDate" class="mt-1 text-sm text-red-600">{{ errors.expiryDate }}</p>
-            <p class="mt-1 text-xs text-gray-500">
-              如果不填写，系统将无法提前预警Token过期
-            </p>
+            <div class="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div class="flex items-start">
+                <i class="fas fa-lightbulb text-amber-500 mt-0.5 mr-2"></i>
+                <div class="text-xs text-amber-800">
+                  <p class="font-medium mb-1">为什么建议填写过期时间？</p>
+                  <p class="mb-1">• <span class="font-medium">不填写：</span>Token失效时功能会突然中断，无法提前预警</p>
+                  <p>• <span class="font-medium">填写后：</span>系统会提前提醒您更新Token，避免服务异常</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 关联主页ID（Facebook特有） -->
@@ -129,9 +155,17 @@
               :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.pageId }"
             >
             <p v-if="errors.pageId" class="mt-1 text-sm text-red-600">{{ errors.pageId }}</p>
-            <p class="mt-1 text-xs text-gray-500">
-              如果Token是用户级别的，请指定要管理的Facebook主页ID
-            </p>
+            <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-start">
+                <i class="fab fa-facebook-f text-blue-500 mt-0.5 mr-2"></i>
+                <div class="text-xs text-blue-800">
+                  <p class="font-medium mb-1">什么时候需要填写主页ID？</p>
+                  <p class="mb-1">• <span class="font-medium">用户级Token：</span>可管理多个主页，需手动指定具体主页ID</p>
+                  <p>• <span class="font-medium">主页级Token：</span>只关联单个主页，通常可自动识别</p>
+                  <p class="text-blue-600 font-medium mt-1">💡 建议填写以确保准确关联到目标主页</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 账户名称 -->
@@ -148,9 +182,17 @@
               :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.accountName }"
             >
             <p v-if="errors.accountName" class="mt-1 text-sm text-red-600">{{ errors.accountName }}</p>
-            <p class="mt-1 text-xs text-gray-500">
-              如果不填写，系统将自动获取账户信息
-            </p>
+            <div class="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div class="flex items-start">
+                <i class="fas fa-user-tag text-green-500 mt-0.5 mr-2"></i>
+                <div class="text-xs text-green-800">
+                  <p class="font-medium mb-1">自定义名称的好处：</p>
+                  <p class="mb-1">• <span class="font-medium">自动生成：</span>可能包含ID或英文原名，不够直观</p>
+                  <p>• <span class="font-medium">手动设置：</span>便于管理多个账户时快速识别区分</p>
+                  <p class="text-green-600 font-medium mt-1">🏷️ 推荐使用易识别的中文名称</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 验证状态显示 -->
@@ -388,38 +430,27 @@ const validateToken = async () => {
     let details = ''
 
     if (props.platform === 'facebook') {
-      // 对于Facebook，我们调用后端的saveFBToken方法（该方法内部会验证Token）
-      // 注意：这里只是用于验证，实际保存会在handleSubmit中进行
+      // 对于Facebook，调用后端的verifyFBToken方法进行验证
       try {
-        // 创建一个临时的验证请求，使用当前Token进行验证
-        const response = await fetch('/api/social/facebook/validate-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token: form.accessToken })
+        // 使用api.js中定义的verifyFBToken方法
+        const response = await socialMediaAPI.verifyFBToken({
+          token: form.accessToken,
+          pageId: form.pageId || null
         })
-
-        if (response.ok) {
-          const data = await response.json()
-          isValid = data.valid
-          details = data.details || `已成功连接到Facebook账户，Token有效且具有必要权限。`
-        } else {
-          // 如果验证API不存在，使用模拟验证作为后备方案
-          // 注意：这只是临时解决方案，建议后端实现专门的验证API
-          throw new Error('验证API不存在')
-        }
+        
+        isValid = response.valid
+        details = response.details || `已成功连接到Facebook账户，Token有效且具有必要权限。`
       } catch (error) {
-        console.warn('使用模拟验证作为后备方案:', error)
-        // 模拟验证（作为临时解决方案）
+        console.warn('Token验证API调用失败:', error)
+        // 模拟验证作为后备方案
         await new Promise(resolve => setTimeout(resolve, 1000))
         
         // 检查Token格式是否符合Facebook的基本规则
-      // Facebook Token通常以EAA开头且长度较长
-      isValid = form.accessToken.startsWith('EAA') && form.accessToken.length > 50
-      details = isValid ? 
-        '已成功连接到Facebook账户，Token有效且具有必要权限。' : 
-        'Token格式不正确。Facebook Token应该以"EAA"开头且长度超过50个字符。请检查您复制的Token是否完整。'
+        // Facebook Token通常以EAAB开头且长度较长
+        isValid = form.accessToken.startsWith('EAA') && form.accessToken.length > 50
+        details = isValid ? 
+          '已成功连接到Facebook账户，Token有效且具有必要权限。' : 
+          'Token格式不正确。Facebook Token应该以"EAAB"开头且长度超过50个字符。请检查您复制的Token是否完整。'
       }
     } else {
       // 对于其他平台，使用基本的格式验证作为模拟
