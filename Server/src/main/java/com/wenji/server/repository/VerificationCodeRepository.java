@@ -37,4 +37,10 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
     @Transactional
     @Query("DELETE FROM VerificationCode v WHERE v.expiredTime < :now")
     int deleteExpiredCodes(@Param("now") LocalDateTime now);
+    
+    // 新增：将指定邮箱和类型的所有未使用验证码标记为已使用（作废）
+    @Modifying
+    @Transactional
+    @Query("UPDATE VerificationCode v SET v.used = 1 WHERE v.email = :email AND v.type = :type AND v.used = 0")
+    int markAllUnusedCodesAsUsedByEmailAndType(@Param("email") String email, @Param("type") Integer type);
 }

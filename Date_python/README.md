@@ -1,6 +1,6 @@
 # Wenji Python Data Service
 
-这是Wenji社交媒体管理系统的Python数据服务，主要负责数据库操作和统一的用户操作日志收集。
+这是Wenji社媒管理系统的Python数据服务，主要负责数据库操作和统一的用户操作日志收集。
 
 ## 功能特性
 

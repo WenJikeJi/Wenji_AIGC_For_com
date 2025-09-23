@@ -28,7 +28,7 @@ export function showNotification(options) {
  * @param {string} title - 可选的通知标题
  * @param {number} duration - 可选的持续时间
  */
-export function showSuccess(message, title = '成功', duration = 3000) {
+export function showSuccess(message, title = 'Success', duration = 3000) {
   showNotification({
     title,
     message,
@@ -43,7 +43,7 @@ export function showSuccess(message, title = '成功', duration = 3000) {
  * @param {string} title - 可选的通知标题
  * @param {number} duration - 可选的持续时间
  */
-export function showError(message, title = '错误', duration = 5000) {
+export function showError(message, title = 'Error', duration = 5000) {
   showNotification({
     title,
     message,
@@ -58,7 +58,7 @@ export function showError(message, title = '错误', duration = 5000) {
  * @param {string} title - 可选的通知标题
  * @param {number} duration - 可选的持续时间
  */
-export function showWarning(message, title = '警告', duration = 4000) {
+export function showWarning(message, title = 'Warning', duration = 4000) {
   showNotification({
     title,
     message,
@@ -73,7 +73,7 @@ export function showWarning(message, title = '警告', duration = 4000) {
  * @param {string} title - 可选的通知标题
  * @param {number} duration - 可选的持续时间
  */
-export function showInfo(message, title = '信息', duration = 3000) {
+export function showInfo(message, title = 'Info', duration = 3000) {
   showNotification({
     title,
     message,

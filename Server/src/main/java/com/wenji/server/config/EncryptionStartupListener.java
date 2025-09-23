@@ -18,13 +18,13 @@ public class EncryptionStartupListener implements ApplicationListener<Applicatio
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        // 应用启动后初始化加密配置
-        System.out.println("正在初始化系统加密配置...");
+        // Initialize encryption configuration after application startup
+        System.out.println("Initializing system encryption configuration...");
         boolean initialized = encryptionInitializer.initializeEncryptionConfig();
         if (initialized) {
-            System.out.println("加密配置初始化完成");
+            System.out.println("Encryption configuration initialization completed");
         } else {
-            System.out.println("加密配置初始化失败，请检查日志");
+            System.out.println("Encryption configuration initialization failed, please check logs");
         }
     }
 }

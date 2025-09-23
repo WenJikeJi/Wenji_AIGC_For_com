@@ -28,31 +28,31 @@ public class EncryptionInitializer {
      */
     public boolean initializeEncryptionConfig() {
         try {
-            // 检查是否已有启用的加密配置
+            // Check if there's already an enabled encryption configuration
             if (systemEncryptionConfigRepository.findByStatus(1).isPresent()) {
-                System.out.println("系统已有启用的加密配置，无需初始化");
+                System.out.println("System already has enabled encryption configuration, no initialization needed");
                 return true;
             }
 
-            // 生成新的RSA密钥对
+            // Generate new RSA key pair
             var keyPairMap = rsaUtil.generateEncodedKeyPair();
             String publicKey = keyPairMap.get("publicKey");
             String privateKey = keyPairMap.get("privateKey");
 
-            // 创建加密配置
+            // Create encryption configuration
             SystemEncryptionConfig config = new SystemEncryptionConfig();
             config.setRsaPublicKey(publicKey);
             config.setRsaPrivateKey(privateKey);
             config.setKeyVersion("KEY_" + UUID.randomUUID().toString().substring(0, 8));
             config.setLastRotateTime(LocalDateTime.now());
-            config.setStatus(1); // 启用状态
+            config.setStatus(1); // Active status
 
-            // 保存到数据库
+            // Save to database
             systemEncryptionConfigRepository.save(config);
-            System.out.println("加密配置初始化成功");
+            System.out.println("Encryption configuration initialization successful");
             return true;
         } catch (Exception e) {
-            System.err.println("加密配置初始化失败: " + e.getMessage());
+            System.err.println("Encryption configuration initialization failed: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

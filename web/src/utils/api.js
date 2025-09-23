@@ -14,6 +14,61 @@ let publicKeyCacheTime = 0;
 const CACHE_DURATION = 3600000; // 缓存1小时
 
 /**
+ * 标准的Base64编码函数，确保生成符合Java标准的Base64编码
+ * @param {string} str - 要编码的字符串
+ * @returns {string} - Base64编码后的字符串
+ */
+function base64Encode(str) {
+  console.log('Base64编码输入:', str);
+  
+  try {
+    // 使用TextEncoder确保正确的UTF-8编码
+    const utf8Bytes = new TextEncoder().encode(str);
+    
+    // 将字节数组转换为二进制字符串
+    let binary = '';
+    for (let i = 0; i < utf8Bytes.length; i++) {
+      binary += String.fromCharCode(utf8Bytes[i]);
+    }
+    
+    // 使用btoa进行Base64编码
+    const result = btoa(binary);
+    console.log('Base64编码结果:', result);
+    
+    // 验证结果只包含合法的Base64字符
+    const base64Pattern = /^[A-Za-z0-9+/]*={0,2}$/;
+    if (!base64Pattern.test(result)) {
+      console.error('生成的Base64字符串包含非法字符:', result);
+      throw new Error('生成的Base64字符串包含非法字符');
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Base64编码失败:', error);
+    
+    // 备用方案：使用简单的字符串编码
+    try {
+      // 对于简单的ASCII字符，直接使用btoa
+      const result = btoa(str);
+      console.log('备用Base64编码结果:', result);
+      
+      // 验证备用方案的结果
+      const base64Pattern = /^[A-Za-z0-9+/]*={0,2}$/;
+      if (!base64Pattern.test(result)) {
+        console.error('备用Base64编码也包含非法字符:', result);
+        throw new Error('备用Base64编码也包含非法字符');
+      }
+      
+      return result;
+    } catch (fallbackError) {
+      console.error('备用Base64编码也失败:', fallbackError);
+      // 最后的备用方案：返回原始字符串（不推荐，但避免完全失败）
+      return str;
+    }
+  }
+}
+
+/**
  * 获取RSA公钥（带缓存）
  * @returns {Promise<Object>} - 返回公钥信息对象
  */
@@ -29,11 +84,17 @@ async function getRsaPublicKey() {
     // 调用后端接口获取公钥
     const response = await request('api/encryption/public-key', 'GET', null, false);
     
+    // 提取公钥字符串（后端返回的是对象格式）
+    const publicKeyStr = response.publicKey;
+    if (!publicKeyStr || typeof publicKeyStr !== 'string') {
+      throw new Error('公钥格式无效');
+    }
+    
     // 更新缓存
-    rsaPublicKeyInfo = response;
+    rsaPublicKeyInfo = publicKeyStr;
     publicKeyCacheTime = now;
     
-    return response;
+    return publicKeyStr;
   } catch (error) {
     console.error('获取RSA公钥失败:', error);
     throw new Error('获取加密配置失败，请稍后重试');
@@ -48,11 +109,36 @@ async function getRsaPublicKey() {
  */
 function encryptWithRsa(data, publicKey) {
   try {
-    // 使用CryptoJS进行RSA加密
-    // 注意：实际项目中应使用专门的RSA加密库，这里为了演示简化处理
-    const publicKeyObj = CryptoJS.enc.Base64.parse(publicKey);
-    const encryptedData = CryptoJS.RSA.encrypt(data, publicKeyObj);
-    return encryptedData.toString();
+    // 参数类型检查
+    if (typeof publicKey !== 'string') {
+      throw new Error(`RSA公钥格式错误，预期字符串，实际是${typeof publicKey}`);
+    }
+    
+    if (!publicKey.trim()) {
+      throw new Error('RSA公钥不能为空');
+    }
+    
+    // 检查公钥完整性（是否包含头部尾部）
+    if (!publicKey.includes('-----BEGIN PUBLIC KEY-----') || !publicKey.includes('-----END PUBLIC KEY-----')) {
+      console.warn('公钥缺少头部/尾部，自动补全');
+      publicKey = `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`;
+    }
+    
+    // 注意：CryptoJS不支持RSA加密，这里使用JSEncrypt库
+    // 如果没有JSEncrypt，抛出错误让系统使用备用方案
+    if (typeof JSEncrypt === 'undefined') {
+      throw new Error('JSEncrypt库未加载，无法进行RSA加密');
+    }
+    
+    const encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicKey);
+    const encryptedData = encrypt.encrypt(data);
+    
+    if (!encryptedData) {
+      throw new Error('RSA加密失败，可能公钥无效');
+    }
+    
+    return encryptedData;
   } catch (error) {
     console.error('RSA加密失败:', error);
     throw new Error('数据加密失败');
@@ -94,10 +180,17 @@ async function request(endpoint, method, data = null, requireAuth = true, backen
     const authInfo = getAuthInfo();
     const token = getAuthToken();
     
-    // 添加JWT token到Authorization头
-    if (token) {
-      options.headers['Authorization'] = `Bearer ${token}`;
+    // 检查认证信息是否存在
+    if (!authInfo || !token) {
+      console.warn('认证信息缺失，跳转到登录页面');
+      // 清除可能损坏的认证信息
+      localStorage.removeItem('user_auth');
+      window.location.hash = '#/login';
+      throw new Error('认证信息缺失，请重新登录');
     }
+    
+    // 添加JWT token到Authorization头
+    options.headers['Authorization'] = `Bearer ${token}`;
     
     // 保留原来的x-user-email头作为补充信息
     if (authInfo && authInfo.user && authInfo.user.email) {
@@ -116,7 +209,15 @@ async function request(endpoint, method, data = null, requireAuth = true, backen
     const response = await fetch(url, options);
     
     if (!response.ok) {
-      // 处理HTTP错误
+      // 特殊处理401认证失败
+      if (response.status === 401) {
+        console.warn('认证失败，清除本地认证信息并跳转到登录页面');
+        localStorage.removeItem('user_auth');
+        window.location.hash = '#/login';
+        throw new Error('认证已过期，请重新登录');
+      }
+      
+      // 处理其他HTTP错误
       const errorData = await response.json().catch(() => ({}));
       // 兼容FastAPI的错误格式和自定义错误格式
       throw new Error(errorData.detail || errorData.message || `请求失败: ${response.status}`);
@@ -130,6 +231,15 @@ async function request(endpoint, method, data = null, requireAuth = true, backen
     return await response.json();
   } catch (error) {
     console.error('API请求错误:', error);
+    
+    // 如果是网络错误或JWT相关错误，提供更友好的错误信息
+    if (error.message.includes('JWT') || error.message.includes('signature')) {
+      console.warn('JWT令牌验证失败，清除认证信息');
+      localStorage.removeItem('user_auth');
+      window.location.hash = '#/login';
+      throw new Error('认证令牌无效，请重新登录');
+    }
+    
     throw error;
   }
 }
@@ -149,41 +259,19 @@ export const authAPI = {
  */
 login: async (email, password, verificationCode, rememberMe, captchaId) => {
   try {
-    // 强制加密并打印调试信息
-      // 密码加密处理
+    // 暂时移除复杂的加密逻辑，直接发送明文密码（开发环境）
+    // 后续可以重新启用RSA加密
     
-    // 尝试获取RSA公钥并加密
-    try {
-      // 获取RSA公钥
-      const publicKeyInfo = await getRsaPublicKey();
-      // 获取公钥成功
-      
-      // 为了简化演示和确保兼容性，我们直接使用Base64编码作为临时加密方案
-      // 在实际项目中应该使用专门的RSA加密库
-      const encryptedPwd = btoa(unescape(encodeURIComponent(password)));
-      // 密码加密完成
-      
-      // 根据后端API文档，使用正确的端点路径/api/auth/login
-      // 调整参数以匹配后端要求，确保发送完整参数
-      return await request('api/auth/login', 'POST', {
-        account: email, // Java后端期望account参数
-        encryptedPassword: encryptedPwd, // Java后端期望encryptedPassword参数
-        role: 0, // 默认使用主账号角色登录
-        verificationCode: verificationCode,
-        captchaId: captchaId
-      }, false);
-    } catch (rsaError) {
-      // RSA加密失败，使用备用加密方案
-      
-      // 备用加密方案：使用简化的AES加密
-      const encryptedPwd = encryptData(password);
-      // 备用加密完成
-      
-      // 发送登录请求
-      return await request('api/auth/login', 'POST', {
-        account: email,
-        encryptedPassword: encryptedPwd, role: 0, verificationCode: verificationCode, captchaId: captchaId }, false);
-    }
+    console.log('发送登录请求，账号:', email);
+    
+    // 发送登录请求，使用明文密码
+    return await request('api/auth/login', 'POST', {
+      account: email, // Java后端期望account参数
+      encryptedPassword: password, // 直接发送明文密码
+      role: 0, // 默认使用主账号角色登录
+      verificationCode: verificationCode, // 添加验证码参数
+      captchaId: captchaId // 添加验证码ID参数
+    }, false);
   } catch (error) {
     console.error('登录请求失败:', error);
     throw error;
@@ -264,11 +352,11 @@ generateCaptcha() {
   svg += '</svg>';
   
   // 转换为base64
-  const base64 = btoa(unescape(encodeURIComponent(svg)));
+  const base64 = base64Encode(svg);
   const imageData = `data:image/svg+xml;base64,${base64}`;
   
-  // 生成验证码ID
-  const captchaId = `captcha_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // 生成验证码ID，避免使用下划线等非Base64字符
+  const captchaId = `captcha${Date.now()}${Math.random().toString(36).substr(2, 9).replace(/[^A-Za-z0-9]/g, '')}`;
   
   return {
     text: captchaText,
@@ -279,9 +367,48 @@ generateCaptcha() {
 
 /**
  * 获取验证码
- * @returns {string} - 返回验证码URL，同时存储验证码ID和文本
+ * @returns {Promise<Object>} - 返回包含验证码图片和ID的对象
  */
 getCaptcha: async () => {
+  try {
+    // 尝试从后端获取验证码
+    const response = await request('api/auth/captcha', 'GET', null, false);
+    
+    if (response && response.captchaImage) {
+      // 后端返回验证码成功，格式为 { captchaImage: "data:image/png;base64,..." }
+      // 从响应头或其他方式获取captchaId，如果没有则生成一个临时ID
+      const captchaId = response.captchaId || 'temp_' + Date.now();
+      localStorage.setItem('captchaId', captchaId);
+      
+      return {
+        image: response.captchaImage,
+        captchaId: captchaId
+      };
+    } else {
+      // 后端验证码服务不可用，使用客户端生成
+      console.warn('后端验证码服务不可用，使用客户端生成');
+      const clientCaptcha = authAPI.generateClientCaptcha();
+      return {
+        image: clientCaptcha,
+        captchaId: localStorage.getItem('captchaId')
+      };
+    }
+  } catch (error) {
+    console.warn('后端验证码获取失败，使用客户端生成:', error.message);
+    // 后端服务不可用时，使用客户端生成
+    const clientCaptcha = authAPI.generateClientCaptcha();
+    return {
+      image: clientCaptcha,
+      captchaId: localStorage.getItem('captchaId')
+    };
+  }
+},
+
+/**
+ * 生成客户端验证码（备用方案）
+ * @returns {string} - 返回验证码图片的base64数据URL
+ */
+generateClientCaptcha: () => {
   try {
     // 生成客户端验证码
     const captcha = authAPI.generateCaptcha();
@@ -289,15 +416,15 @@ getCaptcha: async () => {
     // 存储验证码ID和文本到localStorage
     localStorage.setItem('captchaId', captcha.id);
     // 为了安全，我们存储哈希值而不是明文
-    const captchaHash = btoa(unescape(encodeURIComponent(captcha.text)));
-    localStorage.setItem(`captcha_${captcha.id}`, captchaHash);
+    const captchaHash = base64Encode(captcha.text);
+    localStorage.setItem(`captcha${captcha.id}`, captchaHash);
     
     // 返回验证码图片
     return captcha.imageData;
   } catch (error) {
-    console.error('生成验证码失败:', error);
+    console.error('生成客户端验证码失败:', error);
     // 返回备用的占位图
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGZpbGw9IiM3QjVBQUQiIGQ9Ik0wIDBoMTAwdjQwSDB6Ii8+PHJlY3QgeD0iMjAiIHk9IjEwIiByPSIxNSIgZmlsbD0iI0ZGRkZGRiIvPjxwYXRoIGQ9Ik00NSAxMCBMMTUgMzAgTDE1IDEwIE01NSAxMCBMNzUgMzAgTDc1IDEwIi8+PC9zdmc+';
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNDAiIGZpbGw9IiNmNWY1ZjUiLz48dGV4dCB4PSI2MCIgeT0iMjUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+6aqM6K+B56CB5Yqg6L2955Sz6LSlPC90ZXh0Pjwvc3ZnPg==';
   }
 },
 
@@ -307,9 +434,9 @@ getCaptcha: async () => {
  * @returns {Promise} - 返回操作结果
  */
 sendResetPasswordCode: async (email) => {
-  return request('api/auth/forgot-password/send-code', 'POST', {
+  return request('api/auth/forgot-password', 'POST', {
     email
-  });
+  }, false); // 不需要认证
 },
 
 /**
@@ -320,9 +447,25 @@ sendResetPasswordCode: async (email) => {
  * @returns {Promise} - 返回操作结果
  */
 resetPassword: async (email, resetCode, newPassword) => {
+  // 使用RSA加密新密码
+  let encryptedPassword = null;
+  
+  try {
+    // 获取RSA公钥并加密
+    const publicKey = await getRsaPublicKey();
+    if (publicKey) {
+      encryptedPassword = encryptWithRsa(newPassword, publicKey);
+    }
+  } catch (error) {
+    console.error('RSA加密失败:', error);
+    // 如果RSA加密失败，使用统一的Base64编码函数
+    encryptedPassword = base64Encode(newPassword);
+  }
+  
   return request('api/auth/reset-password', 'POST', {
     email,
-    resetCode,
+    code: resetCode,
+    encryptedPassword,
     newPassword
   });
 },
@@ -347,15 +490,41 @@ sendRegisterCode: async (email) => {
  * @param {boolean} agreeTerms - 是否同意条款
  * @returns {Promise} - 返回操作结果
  */
-registerAccount: async (email, registerCode, password, confirmPassword, agreeTerms) => {
-  return request('api/auth/register', 'POST', {
-    email,
-    registerCode,
-  registerPassword: password,
-  confirmPassword,
-  agreeTerms
-});
-},
+registerAccount: async (email, code, password, confirmPassword, agreeTerms) => {
+    const username = email.split('@')[0];
+    const account = email.split('@')[0];
+    
+    // 加密密码
+    let encryptedPassword = password;
+    let encryptedConfirmPassword = confirmPassword;
+    
+    try {
+      // 尝试获取RSA公钥并加密
+      const publicKey = await getRsaPublicKey();
+      if (publicKey) {
+        encryptedPassword = encryptWithRsa(password, publicKey);
+        encryptedConfirmPassword = encryptWithRsa(confirmPassword, publicKey);
+      } else {
+        // 如果RSA公钥获取失败，使用备用加密方案
+        encryptedPassword = encryptData(password);
+        encryptedConfirmPassword = encryptData(confirmPassword);
+      }
+    } catch (error) {
+      console.warn('密码加密失败，使用备用方案:', error);
+      encryptedPassword = encryptData(password);
+      encryptedConfirmPassword = encryptData(confirmPassword);
+    }
+    
+    return request('api/auth/register', 'POST', {
+      username,
+      account,
+      email,
+      code,
+      encryptedPassword,
+      encryptedConfirmPassword,
+      agreeTerms
+    }, false); // 注册接口不需要认证
+  },
 
 /**
  * 获取飞书登录二维码
@@ -395,7 +564,7 @@ export const userAPI = {
   /**
    * 更新用户角色
    * @param {number} userId - 用户ID
-   * @param {number} role - 新角色（0=超级用户，1=普通用户）
+   * @param {number} role - 新角色（0=主管，1=普通用户）
    * @returns {Promise} - 返回操作结果
    */
   updateUserRole: async (userId, role) => {
@@ -425,13 +594,87 @@ export const userAPI = {
   },
 
   /**
+   * 更新用户账户状态
+   * @param {number} userId - 用户ID
+   * @param {string} accountStatus - 新账户状态（NORMAL, STOPPED, INVITING, INVITE_FAILED）
+   * @returns {Promise} - 返回操作结果
+   */
+  updateUserAccountStatus: async (userId, accountStatus) => {
+    // Java后端路径: /api/users/{userId}/account-status
+    return request(`api/users/${userId}/account-status`, 'PUT', { accountStatus });
+  },
+
+  /**
+   * 重新发送邀请
+   * @param {number} userId - 用户ID
+   * @returns {Promise} - 返回操作结果
+   */
+  resendInvite: async (userId) => {
+    // Java后端路径: /api/users/{userId}/resend-invite
+    return request(`api/users/${userId}/resend-invite`, 'POST');
+  },
+
+  /**
+   * 移除用户
+   * @param {number} userId - 用户ID
+   * @returns {Promise} - 返回操作结果
+   */
+  removeUser: async (userId) => {
+    // Java后端路径: /api/users/{userId}
+    return request(`api/users/${userId}`, 'DELETE');
+  },
+
+  /**
    * 创建子账户
    * @param {Object} userData - 子账户数据
    * @returns {Promise} - 返回创建结果
    */
   createSubAccount: async (userData) => {
-    // Java后端路径: /api/users/create-sub
-    return request('api/users/create-sub', 'POST', userData);
+    // Java后端路径: /api/users/subaccount
+    return request('api/users/subaccount', 'POST', userData);
+  },
+  
+  /**
+   * 更新用户名
+   * @param {number} userId - 用户ID
+   * @param {Object} data - 包含新用户名的数据
+   * @returns {Promise} - 返回操作结果
+   */
+  updateUserName: async (userId, data) => {
+    // Java后端路径: /api/users/{userId}/name
+    return request(`api/users/${userId}/name`, 'PUT', data);
+  },
+  
+  /**
+   * 通过原密码修改密码
+   * @param {number} userId - 用户ID
+   * @param {Object} data - 包含当前密码和新密码的数据
+   * @returns {Promise} - 返回操作结果
+   */
+  changePasswordWithCurrent: async (userId, data) => {
+    // Java后端路径: /api/users/password
+    return request('api/users/password', 'POST', data);
+  },
+  
+  /**
+   * 通过邮箱验证码修改密码
+   * @param {number} userId - 用户ID
+   * @param {Object} data - 包含邮箱验证码和新密码的数据
+   * @returns {Promise} - 返回操作结果
+   */
+  changePasswordWithEmail: async (userId, data) => {
+    // Java后端路径: /api/users/password/email
+    return request('api/users/password/email', 'POST', data);
+  },
+  
+  /**
+   * 发送密码重置验证码
+   * @param {string} email - 邮箱地址
+   * @returns {Promise} - 返回操作结果
+   */
+  sendPasswordResetCode: async (email) => {
+    // Java后端路径: /api/auth/forgot-password
+    return request('api/auth/forgot-password', 'POST', { email }, false);
   },
   
   /**
@@ -535,8 +778,63 @@ export const socialMediaAPI = {
    * @returns {Promise} - 返回发布结果
    */
   publishPost: async (postData) => {
-    // Java后端路径: /api/social-posts/publish
-    return request('api/social-posts/publish', 'POST', postData);
+    // Java后端路径: /api/social/posts/publish
+    return request('api/social/posts/publish', 'POST', postData);
+  },
+
+  /**
+   * 创建定时发帖任务
+   * @param {Object} postData - 帖子数据
+   * @returns {Promise} - 返回任务创建结果
+   */
+  schedulePost: async (postData) => {
+    // Java后端路径: /api/social/posts/schedule
+    return request('api/social/posts/schedule', 'POST', postData);
+  },
+
+  /**
+   * 获取定时任务列表
+   * @param {Object} params - 查询参数
+   * @returns {Promise} - 返回任务列表
+   */
+  getScheduledTasks: async (params = {}) => {
+    const { page = 1, size = 20, taskStatus = '' } = params;
+    const queryParams = new URLSearchParams();
+    queryParams.append('page', page);
+    queryParams.append('size', size);
+    if (taskStatus) queryParams.append('taskStatus', taskStatus);
+    
+    // Java后端路径: /api/social/posts/tasks
+    return request(`api/social/posts/tasks?${queryParams.toString()}`, 'GET');
+  },
+
+  /**
+   * 取消定时任务
+   * @param {string} taskId - 任务ID
+   * @returns {Promise} - 返回取消结果
+   */
+  cancelScheduledTask: async (taskId) => {
+    // Java后端路径: /api/social/posts/tasks/{id}/cancel
+    return request(`api/social/posts/tasks/${taskId}/cancel`, 'POST');
+  },
+
+  /**
+   * 重试失败的任务
+   * @param {string} taskId - 任务ID
+   * @returns {Promise} - 返回重试结果
+   */
+  retryTask: async (taskId) => {
+    // Java后端路径: /api/social/posts/tasks/{id}/retry
+    return request(`api/social/posts/tasks/${taskId}/retry`, 'POST');
+  },
+
+  /**
+   * 获取用户的社交媒体主页列表
+   * @returns {Promise} - 返回主页列表
+   */
+  getHomepages: async () => {
+    // Java后端路径: /api/social/homepages/fetch
+    return request('api/social/homepages/fetch', 'GET');
   },
 
   /**
@@ -601,6 +899,32 @@ export const socialMediaAPI = {
   saveFBToken: async (token) => {
     // Java后端路径: /api/social/facebook/save-token
     return request('api/social/facebook/save-token', 'POST', { token });
+  },
+  
+  /**
+   * 验证Facebook Token
+   * @param {Object} params - 验证参数
+   * @param {string} params.token - Facebook Token
+   * @param {string} params.pageId - 可选，Facebook主页ID
+   * @returns {Promise} - 返回验证结果
+   */
+  verifyFBToken: async (params) => {
+    // Java后端路径: /api/social/facebook/verify-token
+    return request('api/social/facebook/verify-token', 'POST', params);
+  },
+  
+  /**
+   * 保存Facebook系统Token
+   * @param {Object} params - Token相关参数
+   * @param {string} params.token - Facebook系统Token
+   * @param {string} params.expiryDate - 可选，Token过期日期
+   * @param {string} params.pageId - 可选，Facebook主页ID
+   * @param {string} params.accountName - 可选，账户名称
+   * @returns {Promise} - 返回保存结果
+   */
+  saveFBSystemToken: async (params) => {
+    // Java后端路径: /api/social/facebook/save-system-token
+    return request('api/social/facebook/save-system-token', 'POST', params);
   },
 
   /**

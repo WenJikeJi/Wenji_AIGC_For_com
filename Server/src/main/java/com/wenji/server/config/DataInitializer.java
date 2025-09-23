@@ -27,16 +27,16 @@ public class DataInitializer implements ApplicationRunner {
         if (!userAccountRepository.existsByAccount("admin")) {
             // 创建测试用的admin账号
             UserAccount admin = new UserAccount();
-            admin.setUsername("管理员");
+            admin.setUsername("Administrator");
             admin.setAccount("admin");
             admin.setEmail("admin@example.com");
-            admin.setPassword(passwordEncoder.encode("admin123")); // 密码为admin123
-            admin.setRole(0); // 主账号角色
-            admin.setEmailVerified(1); // 已验证邮箱
-            admin.setStatus(1); // 启用状态
+            admin.setPassword(passwordEncoder.encode("admin123")); // Password: admin123
+            admin.setRole(0); // Primary account role
+            admin.setEmailVerified(1); // Email verified
+            admin.setStatus(1); // Active status
             
             userAccountRepository.save(admin);
-            System.out.println("测试用户admin已初始化，密码: admin123");
+            System.out.println("Test user admin initialized, password: admin123");
         }
     }
 }

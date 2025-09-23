@@ -5,35 +5,54 @@
     </div>
     
     <div class="p-5">
-      <!-- 当前授权状态 -->
+      <!-- 已授权账号列表 -->
       <div class="mb-6">
-        <h4 class="text-sm font-medium text-gray-700 mb-3">当前授权状态</h4>
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div class="flex items-center">
-            <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
-              <i class="fab fa-instagram"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900">{{ currentStatus.name || '未连接' }}</p>
-              <p class="text-xs text-gray-500">
-                {{ currentStatus.connected ? 
-                  `已授权，${formatExpiryDate(currentStatus.expiryDate)}` : 
-                  '等待授权连接' 
-                }}
-              </p>
-              <p v-if="!facebookConnected" class="text-xs text-red-500 mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>
-                需要先完成Facebook账号授权
-              </p>
+        <h4 class="text-sm font-medium text-gray-700 mb-3">已授权账号 ({{ authorizedAccounts.length }})</h4>
+        <div class="space-y-3">
+          <div v-if="authorizedAccounts.length === 0" class="p-4 bg-gray-50 rounded-lg text-center text-gray-500 text-sm">
+            暂无已授权的Instagram账号
+          </div>
+          <div 
+            v-for="(account, index) in authorizedAccounts" 
+            :key="account.id || index"
+            class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-pink-300 transition-colors"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
+                  <i class="fab fa-instagram"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-900">{{ account.name || '未知账号' }}</p>
+                  <p class="text-xs text-gray-500">
+                    {{ account.connected ? 
+                      `已授权，${formatExpiryDate(account.expiryDate)}` : 
+                      '等待授权连接' 
+                    }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">
+                    Page ID: {{ account.id || '无' }}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex items-center space-x-2">
+                <span 
+                  class="px-3 py-1 text-xs font-semibold rounded-full"
+                  :class="account.connected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                >
+                  {{ account.connected ? '已连接' : '未连接' }}
+                </span>
+                <button 
+                  @click="removeAccount(index)"
+                  class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                  title="删除此账号"
+                >
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </div>
             </div>
           </div>
-          
-          <span 
-            class="px-3 py-1 text-xs font-semibold rounded-full"
-            :class="currentStatus.connected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-          >
-            {{ currentStatus.connected ? '已连接' : '未连接' }}
-          </span>
         </div>
       </div>
       
@@ -97,14 +116,24 @@
           刷新状态
         </button>
         <button 
-          class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-          @click="confirmUnbind"
-          :disabled="!currentStatus.connected"
+          class="px-4 py-2 bg-pink-600 text-white rounded-lg text-sm font-medium hover:bg-pink-700 transition-colors"
+          @click="cancel"
         >
-          解绑账户
+          取消
         </button>
       </div>
     </div>
+    
+    <!-- 删除确认弹窗 -->
+    <CustomConfirmModal
+      v-if="showUnbindConfirm"
+      title="确认删除账号"
+      :message="'确定要删除 ' + (authorizedAccounts[accountToRemove]?.name || '此账号') + ' 吗？删除后将无法恢复。'"
+      confirmText="删除"
+      cancelText="取消"
+      @confirm="confirmRemoveAccount"
+      @cancel="cancelRemove"
+    />
   </div>
 </template>
 
@@ -126,14 +155,10 @@ export default {
     }
   },
   setup(props) {
-    const currentStatus = ref({ 
-      connected: false,
-      name: '',
-      id: '',
-      expiryDate: null
-    });
+    const authorizedAccounts = ref([]);
     const pages = ref([]);
     const showUnbindConfirm = ref(false);
+    const accountToRemove = ref(null);
     
     // 计算Facebook是否已连接
     const facebookConnected = computed(() => {
@@ -145,7 +170,12 @@ export default {
       try {
         const response = await socialMediaAPI.getPlatformStatus();
         if (response.instagram) {
-          currentStatus.value = response.instagram;
+          // 处理单个账号或多个账号的情况
+          if (Array.isArray(response.instagram)) {
+            authorizedAccounts.value = response.instagram;
+          } else {
+            authorizedAccounts.value = response.instagram.connected ? [response.instagram] : [];
+          }
         }
         
         // 获取Instagram Pages列表
@@ -186,21 +216,30 @@ export default {
       }
     };
     
-    // 确认解绑
-    const confirmUnbind = () => {
+    // 删除账号
+    const removeAccount = (index) => {
+      accountToRemove.value = index;
       showUnbindConfirm.value = true;
     };
     
-    // 解绑Instagram账号
-    const unbindInstagram = async () => {
+    // 确认删除账号
+    const confirmRemoveAccount = async () => {
       try {
-        await socialMediaAPI.unbindInstagram();
-        showSuccess('Instagram账号解绑成功!');
-        await fetchStatus();
+        const account = authorizedAccounts.value[accountToRemove.value];
+        await socialMediaAPI.removeInstagramAccount(account.id);
+        authorizedAccounts.value.splice(accountToRemove.value, 1);
+        showSuccess('Instagram账号删除成功!');
         showUnbindConfirm.value = false;
+        accountToRemove.value = null;
       } catch (error) {
-        showError('解绑失败: ' + error.message);
+        showError('删除账号失败: ' + error.message);
       }
+    };
+    
+    // 取消删除
+    const cancelRemove = () => {
+      showUnbindConfirm.value = false;
+      accountToRemove.value = null;
     };
     
     // 刷新状态
@@ -214,17 +253,27 @@ export default {
       fetchStatus();
     });
     
+    // 取消操作，通过emit通知父组件关闭弹窗
+    const emit = defineEmits(['cancel']);
+    
+    const cancel = () => {
+      emit('cancel');
+    };
+
     return {
-      currentStatus,
+      authorizedAccounts,
       pages,
       showUnbindConfirm,
+      accountToRemove,
       facebookConnected,
       fetchStatus,
       formatExpiryDate,
       selectPage,
-      confirmUnbind,
-      unbindInstagram,
-      refreshStatus
+      removeAccount,
+      confirmRemoveAccount,
+      cancelRemove,
+      refreshStatus,
+      cancel
     };
   }
 };

@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; 
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +74,13 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     // 根据角色查询用户列表
     List<UserAccount> findByRole(Integer role);
     
-    // 根据角色分页查询用户列表
+    // 根据角色查询用户（分页）
     Page<UserAccount> findByRole(Integer role, Pageable pageable);
+    
+    // 查询指定用户ID或其子账号（用于主账号查看自己和子账号）
+    @Query("SELECT u FROM UserAccount u WHERE u.id = :userId OR (u.parentId = :parentId AND u.id != :parentId)")
+    Page<UserAccount> findByIdOrParentId(@Param("userId") Long userId, @Param("parentId") Long parentId, Pageable pageable);
+    
+    // 根据角色和parentId为null查询用户（用于初始化主账号的parentId）
+    List<UserAccount> findByRoleAndParentIdIsNull(Integer role);
 }

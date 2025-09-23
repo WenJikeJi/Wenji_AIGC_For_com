@@ -51,7 +51,14 @@ public class JwtUtil {
     
     // 获取令牌中的所有声明
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+        try {
+            return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+        } catch (Exception e) {
+            System.out.println("JWT解析失败: " + e.getMessage());
+            System.out.println("Token: " + token);
+            System.out.println("JWT Secret: " + jwtSecret);
+            throw e;
+        }
     }
     
     // 检查令牌是否过期
@@ -62,22 +69,38 @@ public class JwtUtil {
     
     // 生成令牌
     public String generateToken(Long userId, String username, Integer role) {
+        System.out.println("JWT生成参数详情:");
+        System.out.println("userId: " + userId + " (类型: " + userId.getClass().getSimpleName() + ")");
+        System.out.println("username: " + username + " (类型: " + username.getClass().getSimpleName() + ")");
+        System.out.println("role: " + role + " (类型: " + role.getClass().getSimpleName() + ")");
+        
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId.toString());
         claims.put("role", role.toString());
+        
+        System.out.println("Claims内容:");
+        claims.forEach((key, value) -> System.out.println(key + ": " + value + " (类型: " + value.getClass().getSimpleName() + ")"));
         
         return doGenerateToken(claims, username);
     }
     
     // 构建令牌
     private String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder()
+        System.out.println("构建JWT令牌:");
+        System.out.println("subject: " + subject);
+        System.out.println("jwtSecret: " + jwtSecret);
+        System.out.println("jwtExpiration: " + jwtExpiration);
+        
+        String token = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
+                
+        System.out.println("生成的完整JWT令牌: " + token);
+        return token;
     }
     
     // 验证令牌

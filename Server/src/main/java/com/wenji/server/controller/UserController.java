@@ -51,12 +51,12 @@ public class UserController {
             Integer currentUserRole = Integer.parseInt(request.getAttribute("role").toString());
             
             // 权限控制
-            // - 主账号可以查看所有子账号（如果提供parentId，则只查看自己的子账号）
+            // - 主账号只能查看自己和自己创建的子账号
             // - 子账号只能查看自己
             Page<UserAccount> userPage;
             if (currentUserRole == 0) {
-                // 主账号
-                userPage = userService.getUserList(page, size, parentId);
+                // 主账号，只能查看自己和自己的子账号
+                userPage = userService.getUserListForMainAccount(page, size, currentUserId, parentId);
             } else {
                 // 子账号，只能查看自己
                 throw new RuntimeException("无权限查看用户列表");
@@ -67,7 +67,7 @@ public class UserController {
                     "total", userPage.getTotalElements(),
                     "page", page,
                     "size", size,
-                    "data", userPage.getContent()
+                    "users", userPage.getContent()  // 修改为users字段，与前端期望一致
             );
             
             return ResponseEntity.ok(result);
@@ -96,7 +96,7 @@ public class UserController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(
-                                    example = "{\"username\": \"子账号名称\", \"account\": \"subaccount001\", \"email\": \"subaccount@example.com\", \"encryptedPassword\": \"encrypted_password\"}"
+                                    example = "{\"username\": \"子账号名称\", \"account\": \"subaccount001\", \"email\": \"subaccount@example.com\", \"password\": \"password123\", \"role\": 3}"
                             )
                     )
             )
@@ -112,14 +112,15 @@ public class UserController {
             }
             
             String username = (String) requestBody.get("username");
-            String account = (String) requestBody.get("account");
             String email = (String) requestBody.get("email");
-            String encryptedPassword = (String) requestBody.get("encryptedPassword");
+            Integer role = requestBody.get("role") != null ? 
+                Integer.parseInt(requestBody.get("role").toString()) : 3; // 默认编辑角色
             
             // 获取客户端IP
             String clientIp = getClientIp(request);
             
-            userService.addSubAccount(currentUserId, username, account, email, encryptedPassword, clientIp);
+            // 使用邮箱作为账号，不传递密码让后端生成临时密码
+            userService.addSubAccount(currentUserId, username, email, email, null, role, clientIp);
             return ResponseEntity.ok(Map.of("message", "子账号添加成功"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -188,10 +189,19 @@ public class UserController {
             Integer currentUserRole = Integer.parseInt(request.getAttribute("role").toString());
             
             // 权限控制
-            // - 主账号可以查看任何用户
+            // - 超级账户（主账号）可以查看自己和自己的子账户
             // - 子账号只能查看自己
-            if (currentUserRole != 0 && !userId.equals(currentUserId)) {
-                throw new RuntimeException("无权限查看该用户信息");
+            if (currentUserRole == 0) {
+                // 主账号权限：可以查看自己或自己的子账户
+                UserAccount targetUser = userService.getUserById(userId);
+                if (!userId.equals(currentUserId) && !currentUserId.equals(targetUser.getParentId())) {
+                    throw new RuntimeException("无权限查看该用户信息");
+                }
+            } else {
+                // 子账号权限：只能查看自己
+                if (!userId.equals(currentUserId)) {
+                    throw new RuntimeException("无权限查看该用户信息");
+                }
             }
             
             UserAccount user = userService.getUserById(userId);

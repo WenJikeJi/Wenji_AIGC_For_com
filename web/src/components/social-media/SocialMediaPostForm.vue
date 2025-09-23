@@ -185,7 +185,7 @@
 <script>
 import { ref, computed, watch } from 'vue';
 import { socialMediaAPI } from '../../utils/api.js';
-import { showNotification } from '../../utils/notifications.js';
+import { showNotification } from '../../utils/notification.js';
 
 export default {
   name: 'SocialMediaPostForm',

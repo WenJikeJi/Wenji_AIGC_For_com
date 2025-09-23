@@ -56,40 +56,56 @@ public class AuthService {
     // 登录功能
     @Transactional
     public Map<String, Object> login(String account, String encryptedPassword, Integer role, String ip) {
-        // 1. 查找用户
-        UserAccount user = userAccountRepository.findByAccount(account)
-                .orElseThrow(() -> new RuntimeException("账号不存在"));
-        
-        // 2. 检查用户状态
-        if (user.getStatus() != 1) {
-            throw new RuntimeException("账号已被禁用");
-        }
-        
-        // 3. 检查用户角色
-        if (user.getRole() != role) {
-            throw new RuntimeException("角色不匹配");
-        }
-        
+        UserAccount user = null;
         try {
+            // 1. 查找用户（只支持邮箱登录）
+            Optional<UserAccount> userByEmail = userAccountRepository.findByEmail(account);
+            if (!userByEmail.isPresent()) {
+                throw new RuntimeException("邮箱不存在");
+            }
+            user = userByEmail.get();
+            
+            // 2. 检查用户状态
+            if (user.getStatus() != 1) {
+                throw new RuntimeException("账号已被禁用");
+            }
+            
+            // 3. 检查用户角色
+            if (user.getRole() != role) {
+                throw new RuntimeException("角色不匹配");
+            }
+            
             // 4. 获取系统私钥并解密密码
-            String password = null;
+            String password;
             try {
+                // 获取系统加密配置
                 SystemEncryptionConfig encryptionConfig = systemEncryptionConfigRepository.findByStatus(1)
                         .orElseThrow(() -> new RuntimeException("加密配置不存在"));
                 
-                // 尝试RSA解密
-                password = rsaUtil.decrypt(encryptedPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
-            } catch (Exception e) {
-                // 如果RSA解密失败，尝试处理Base64编码的密码（前端临时方案）
-                try {
-                    password = new String(java.util.Base64.getDecoder().decode(encryptedPassword), java.nio.charset.StandardCharsets.UTF_8);
-                } catch (Exception ex) {
-                    // 如果Base64解码也失败，将原始密码用于验证（开发测试用）
+                // 检查是否为明文密码（简单的启发式检查）
+                if (encryptedPassword.matches("^[a-zA-Z0-9]+$") && encryptedPassword.length() < 20) {
+                    System.out.println("检测到明文密码，跳过RSA解密");
                     password = encryptedPassword;
+                } else {
+                    // 尝试RSA解密
+                    password = rsaUtil.decrypt(encryptedPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
+                    System.out.println("RSA解密成功");
                 }
+            } catch (IllegalArgumentException e) {
+                System.out.println("Base64格式错误: " + e.getMessage());
+                System.out.println("使用明文密码进行验证");
+                password = encryptedPassword;
+            } catch (Exception e) {
+                // 如果RSA解密失败，直接使用明文密码（开发环境）
+                password = encryptedPassword;
+                System.out.println("RSA解密失败，使用明文密码: " + password + "，错误: " + e.getMessage());
             }
             
             // 5. 验证密码
+            System.out.println("解密后的密码: " + password);
+            System.out.println("数据库中的密码哈希: " + user.getPassword());
+            System.out.println("密码验证结果: " + passwordEncoder.matches(password, user.getPassword()));
+            
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 throw new RuntimeException("密码错误");
             }
@@ -101,33 +117,49 @@ public class AuthService {
             userAccountRepository.updateLastLoginInfo(user.getId(), LocalDateTime.now(), ip, address);
             
             // 8. 生成JWT令牌
+            System.out.println("生成JWT令牌的参数:");
+            System.out.println("用户ID: " + user.getId());
+            System.out.println("用户账号: " + user.getAccount());
+            System.out.println("用户角色: " + user.getRole());
             String token = jwtUtil.generateToken(user.getId(), user.getAccount(), user.getRole());
+            System.out.println("生成的JWT令牌: " + token);
             
             // 9. 记录操作日志到Python服务
-            logClient.recordOperationLog(
-                user.getId(),
-                "用户登录",
-                ip,
-                address,
-                "登录成功，账号: " + account,
-                1 // 加密传输
-            );
+            try {
+                logClient.recordOperationLog(
+                    user.getId(),
+                    "用户登录",
+                    ip,
+                    address,
+                    "登录成功，账号: " + account,
+                    1 // 加密传输
+                );
+            } catch (Exception logException) {
+                System.out.println("记录操作日志失败: " + logException.getMessage());
+                // 不影响登录流程，继续执行
+            }
             
             // 10. 返回结果
             Map<String, Object> result = new HashMap<>();
             result.put("token", token);
             result.put("user", user);
             return result;
+        
         } catch (Exception e) {
             // 记录登录失败日志到Python服务
-            logClient.recordOperationLog(
-                user.getId(),
-                "用户登录",
-                ip,
-                null,
-                "登录失败，原因: " + e.getMessage(),
-                1 // 加密传输
-            );
+            try {
+                logClient.recordOperationLog(
+                    user != null ? user.getId() : null,
+                    "用户登录",
+                    ip,
+                    null,
+                    "登录失败，原因: " + e.getMessage(),
+                    1 // 加密传输
+                );
+            } catch (Exception logException) {
+                System.out.println("记录登录失败日志失败: " + logException.getMessage());
+                // 不影响异常抛出
+            }
             
             throw new RuntimeException("登录失败: " + e.getMessage());
         }
@@ -135,13 +167,18 @@ public class AuthService {
     
     // 注册功能
     @Transactional
-    public void register(String username, String account, String email, String encryptedPassword, String code, String ip) {
+    public void register(String username, String account, String email, String encryptedPassword, String encryptedConfirmPassword, Boolean agreeTerms, String code, String ip) {
         // 1. 验证验证码
         VerificationCode verificationCode = verificationCodeRepository.findByEmailAndCodeAndTypeAndUsedAndExpiredTimeAfter(
                 email, code, 1, 0, LocalDateTime.now())
                 .orElseThrow(() -> new RuntimeException("验证码错误或已过期"));
         
-        // 2. 检查账号和邮箱是否已存在
+        // 2. 验证服务条款同意状态
+        if (agreeTerms == null || !agreeTerms) {
+            throw new RuntimeException("必须同意服务条款才能注册");
+        }
+        
+        // 3. 检查账号和邮箱是否已存在
         if (userAccountRepository.existsByAccount(account)) {
             throw new RuntimeException("账号已存在");
         }
@@ -151,18 +188,59 @@ public class AuthService {
         }
         
         try {
-            // 3. 获取系统私钥并解密密码
+            // 4. 获取系统私钥并解密密码
             SystemEncryptionConfig encryptionConfig = systemEncryptionConfigRepository.findByStatus(1)
                     .orElseThrow(() -> new RuntimeException("加密配置不存在"));
             
-            String password = rsaUtil.decrypt(encryptedPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
+            String password = null;
+            String confirmPassword = null;
             
-            // 4. 验证密码强度（至少8位，包含数字、字母和特殊字符）
+            try {
+                // 检查是否为明文密码（简单的启发式检查）
+                if (encryptedPassword.matches("^[a-zA-Z0-9]+$") && encryptedPassword.length() < 20) {
+                    System.out.println("检测到明文密码，跳过RSA解密");
+                    password = encryptedPassword;
+                    confirmPassword = encryptedConfirmPassword;
+                } else {
+                    // 尝试RSA解密
+                    password = rsaUtil.decrypt(encryptedPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
+                    confirmPassword = rsaUtil.decrypt(encryptedConfirmPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
+                    System.out.println("RSA解密成功");
+                }
+            } catch (Exception e) {
+                System.out.println("RSA解密失败，尝试Base64解码: " + e.getMessage());
+                // 如果RSA解密失败，尝试处理Base64编码的密码（前端备用方案）
+                try {
+                    // 检查是否为明文密码
+                    if (encryptedPassword.matches("^[a-zA-Z0-9]+$") && encryptedPassword.length() < 20) {
+                        System.out.println("检测到明文密码，跳过Base64解码");
+                        password = encryptedPassword;
+                        confirmPassword = encryptedConfirmPassword;
+                    } else {
+                        // 智能Base64解码 - 检查是否包含URL安全字符
+                        password = decodeBase64String(encryptedPassword);
+                        confirmPassword = decodeBase64String(encryptedConfirmPassword);
+                    }
+                    System.out.println("Base64解码成功，密码: " + password);
+                } catch (Exception ex) {
+                    System.out.println("Base64解码失败，使用原始密码: " + ex.getMessage());
+                    // 如果所有Base64解码都失败，将原始密码用于验证（开发测试用）
+                    password = encryptedPassword;
+                    confirmPassword = encryptedConfirmPassword;
+                }
+            }
+            
+            // 5. 验证密码一致性
+            if (!password.equals(confirmPassword)) {
+                throw new RuntimeException("两次输入的密码不一致");
+            }
+            
+            // 6. 验证密码强度（至少8位，包含数字、字母和特殊字符）
             if (!isPasswordStrong(password)) {
                 throw new RuntimeException("密码强度不足，请使用至少8位，包含数字、字母和特殊字符的密码");
             }
             
-            // 5. 创建用户
+            // 7. 创建用户
             UserAccount user = new UserAccount();
             user.setUsername(username);
             user.setAccount(account);
@@ -174,10 +252,10 @@ public class AuthService {
             
             userAccountRepository.save(user);
             
-            // 6. 标记验证码为已使用
+            // 8. 标记验证码为已使用
             verificationCodeRepository.markCodeAsUsed(verificationCode.getId());
             
-            // 7. 记录操作日志到Python服务
+            // 9. 记录操作日志到Python服务
             logClient.recordOperationLog(
                 user.getId(),
                 "用户注册",
@@ -187,7 +265,7 @@ public class AuthService {
                 1 // 加密传输
             );
             
-            // 8. 发送注册成功邮件
+            // 10. 发送注册成功邮件
             emailUtil.sendRegisterSuccessEmail(email, username);
         } catch (Exception e) {
             throw new RuntimeException("注册失败: " + e.getMessage());
@@ -195,15 +273,29 @@ public class AuthService {
     }
     
     // 发送验证码
+    @Transactional
     public void sendVerificationCode(String email, Integer type, String ip) {
-        // 1. 检查IP请求频率（1分钟内不超过5次）
+        // 1. 根据验证码类型检查邮箱状态
+        if (type == 1) { // 注册验证码
+            // 检查邮箱是否已经注册
+            if (userAccountRepository.existsByEmail(email)) {
+                throw new RuntimeException("该邮箱已经注册，请直接登录或使用忘记密码功能");
+            }
+        } else if (type == 2) { // 密码重置验证码
+            // 检查邮箱是否存在
+            if (!userAccountRepository.existsByEmail(email)) {
+                throw new RuntimeException("该邮箱未注册，请先注册账号");
+            }
+        }
+        
+        // 2. 检查IP请求频率（1分钟内不超过5次）
         LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
         int count = verificationCodeRepository.countByRequestIpAndCreatedTimeAfter(ip, oneMinuteAgo);
         if (count >= 5) {
             throw new RuntimeException("请求过于频繁，每分钟最多可以请求5次验证码");
         }
         
-        // 2. 检查请求间隔（不能少于12秒）
+        // 3. 检查请求间隔（不能少于12秒）
         Optional<LocalDateTime> lastRequestTime = verificationCodeRepository.findLastRequestTimeByIp(ip);
         if (lastRequestTime.isPresent()) {
             long secondsSinceLastRequest = ChronoUnit.SECONDS.between(lastRequestTime.get(), LocalDateTime.now());
@@ -212,10 +304,16 @@ public class AuthService {
             }
         }
         
-        // 3. 生成6位数字验证码
+        // 4. 作废该邮箱该类型的所有未使用验证码（实现新规则：发第二条验证码前一条作废）
+        int invalidatedCount = verificationCodeRepository.markAllUnusedCodesAsUsedByEmailAndType(email, type);
+        if (invalidatedCount > 0) {
+            System.out.println("已作废 " + invalidatedCount + " 个未使用的验证码，邮箱: " + email + ", 类型: " + type);
+        }
+        
+        // 5. 生成6位数字验证码
         String code = generateVerificationCode();
         
-        // 4. 保存验证码
+        // 6. 保存验证码
         VerificationCode verificationCode = new VerificationCode();
         verificationCode.setEmail(email);
         verificationCode.setCode(code);
@@ -226,28 +324,34 @@ public class AuthService {
         
         verificationCodeRepository.save(verificationCode);
         
-        // 5. 发送验证码邮件 - 优化异常处理，确保即使邮件发送失败也不影响核心功能
+        // 7. Send verification code email - re-enable email sending with correct configuration
         try {
             emailUtil.sendVerificationCode(email, code, type);
+            System.out.println("=== Verification Code Sent ===");
+            System.out.println("Email: " + email);
+            System.out.println("Code: " + code);
+            System.out.println("Type: " + (type == 1 ? "Registration" : "Password Reset"));
+            System.out.println("Valid for: 15 minutes");
+            System.out.println("==============================");
         } catch (Exception e) {
-            // 记录邮件发送失败的详细日志
-            System.err.println("邮件发送失败: " + e.getMessage());
-            System.err.println("详细错误信息: " + e.toString());
+            // Log email sending failure details
+            System.err.println("Email sending failed: " + e.getMessage());
+            System.err.println("Detailed error info: " + e.toString());
             
-            // 获取完整的异常堆栈信息
+            // Get complete exception stack trace
             java.io.StringWriter sw = new java.io.StringWriter();
             java.io.PrintWriter pw = new java.io.PrintWriter(sw);
             e.printStackTrace(pw);
-            System.err.println("异常堆栈: " + sw.toString());
+            System.err.println("Exception stack: " + sw.toString());
             
-            // 记录到日志服务（如果可用）
+            // Record to log service (if available)
             try {
                 logClient.recordOperationLog(
-                    null,  // 未登录用户
-                    "邮件发送失败",
+                    null,  // Unauthenticated user
+                    "Email sending failed",
                     ip,
                     null,
-                    "向" + email + "发送验证码失败: " + e.getMessage(),
+                    "Failed to send verification code to " + email + ": " + e.getMessage(),
                     1 // 加密传输
                 );
             } catch (Exception logEx) {
@@ -260,7 +364,7 @@ public class AuthService {
     
     // 重置密码
     @Transactional
-    public void resetPassword(String email, String code, String encryptedPassword) {
+    public void resetPassword(String email, String code, String encryptedPassword, String newPassword) {
         // 1. 验证验证码
         VerificationCode verificationCode = verificationCodeRepository.findByEmailAndCodeAndTypeAndUsedAndExpiredTimeAfter(
                 email, code, 2, 0, LocalDateTime.now())
@@ -271,11 +375,21 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
         
         try {
-            // 3. 获取系统私钥并解密密码
-            SystemEncryptionConfig encryptionConfig = systemEncryptionConfigRepository.findByStatus(1)
-                    .orElseThrow(() -> new RuntimeException("加密配置不存在"));
+            String password = null;
             
-            String password = rsaUtil.decrypt(encryptedPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
+            // 3. 优先使用加密密码，如果没有则使用明文密码
+            if (encryptedPassword != null && !encryptedPassword.trim().isEmpty()) {
+                // 获取系统私钥并解密密码
+                SystemEncryptionConfig encryptionConfig = systemEncryptionConfigRepository.findByStatus(1)
+                        .orElseThrow(() -> new RuntimeException("加密配置不存在"));
+                
+                password = rsaUtil.decrypt(encryptedPassword, rsaUtil.getPrivateKey(encryptionConfig.getRsaPrivateKey()));
+            } else if (newPassword != null && !newPassword.trim().isEmpty()) {
+                // 使用明文密码（开发测试用）
+                password = newPassword;
+            } else {
+                throw new RuntimeException("密码参数不能为空");
+            }
             
             // 4. 验证密码强度
             if (!isPasswordStrong(password)) {
@@ -352,6 +466,29 @@ public class AuthService {
         Random random = new Random();
         int code = 100000 + random.nextInt(900000); // 生成6位数字
         return String.valueOf(code);
+    }
+    
+    /**
+     * 智能Base64解码方法 - 自动检测并处理URL安全字符
+     */
+    private String decodeBase64String(String encodedString) throws Exception {
+        if (encodedString == null || encodedString.isEmpty()) {
+            return encodedString;
+        }
+        
+        try {
+            // 检查是否包含URL安全字符 (- 或 _)
+            if (encodedString.contains("-") || encodedString.contains("_")) {
+                System.out.println("检测到URL安全Base64字符，使用URL解码器");
+                return new String(java.util.Base64.getUrlDecoder().decode(encodedString), java.nio.charset.StandardCharsets.UTF_8);
+            } else {
+                System.out.println("使用标准Base64解码器");
+                return new String(java.util.Base64.getDecoder().decode(encodedString), java.nio.charset.StandardCharsets.UTF_8);
+            }
+        } catch (Exception e) {
+            System.out.println("Base64解码失败: " + e.getMessage());
+            throw e;
+        }
     }
     
     // 验证密码强度

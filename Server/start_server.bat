@@ -7,7 +7,7 @@ set "DB_USERNAME=root"
 set "DB_PASSWORD=Wenguang-1122"
 
 REM 设置JWT密钥
-set "JWT_SECRET=wenji_secret_key_1234567890"
+set "JWT_SECRET=wenjiSecretKey1234567890"
 
 REM 设置邮件服务器配置（使用飞书邮箱）
 set "MAIL_HOST=smtp.feishu.cn"
@@ -20,6 +20,4 @@ REM 设置服务器端口
 set "SERVER_PORT=8080"
 
 REM 启动Spring Boot应用，明确禁用SSL并传递JWT密钥，强制使用UTF-8编码
-java -Dfile.encoding=UTF-8 -jar target/Server-1.0.0.jar --server.ssl.enabled=false --jwt.secret=wenji_secret_key_1234567890
-
-pause
+java -Dfile.encoding=UTF-8 -jar target/Server-1.0.0.jar --server.ssl.enabled=false --jwt.secret=wenjisecretkeyfor256bitshs256algorithmsecuritycompliance2024mustbelongenough

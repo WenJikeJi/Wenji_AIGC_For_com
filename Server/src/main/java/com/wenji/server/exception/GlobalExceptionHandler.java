@@ -69,11 +69,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ResponseEntity<?> handleAllExceptions(Exception ex, WebRequest request) {
+        // 1. 打印异常堆栈到控制台（关键：手动强制输出异常）
+        System.err.println("===== 接口异常详情 =====");
+        System.err.println("请求URL: " + request.getDescription(false));
+        ex.printStackTrace(); // 这行代码会在控制台打印完整异常堆栈
+        System.err.println("======================");
+        
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("error", "系统错误");
         errorResponse.put("message", "服务器内部错误，请稍后再试");
-        // 在开发环境中可以添加详细错误信息，但在生产环境中应该避免泄露系统信息
-        // errorResponse.put("details", ex.getMessage());
+        // 添加详细异常信息用于调试（开发环境）
+        errorResponse.put("exceptionType", ex.getClass().getName()); // 异常类型（如NullPointerException）
+        errorResponse.put("exceptionMsg", ex.getMessage()); // 异常原因（如"xxx为null"）
+        errorResponse.put("requestUrl", request.getDescription(false)); // 请求路径
         
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

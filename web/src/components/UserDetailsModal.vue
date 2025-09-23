@@ -4,8 +4,8 @@
       <!-- 弹窗头部 -->
       <div class="flex items-center justify-between p-6 border-b border-gray-200">
         <h3 class="text-lg font-semibold text-gray-900">用户详情</h3>
-        <button @click="handleClose" class="text-gray-400 hover:text-gray-500">
-          <i class="fas fa-times"></i>
+        <button @click="handleClose" class="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-300 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 shadow-sm">
+          <i class="fas fa-times text-sm"></i>
         </button>
       </div>
       
@@ -26,11 +26,11 @@
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-sm text-gray-500 mb-1">角色</p>
               <p class="font-medium">
-                <span v-if="user?.role === 0" class="px-3 py-1.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-700 shadow-sm">
-                  超级用户
+                <span v-if="user?.role === 0" class="px-3 py-1.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-700 shadow-sm">
+                  主管
                 </span>
-                <span v-else class="px-3 py-1.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-700 shadow-sm">
-                  普通用户
+                <span v-else class="px-3 py-1.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-700 shadow-sm">
+                  成员
                 </span>
               </p>
             </div>
@@ -112,6 +112,7 @@
                 v-model="localSearch.operationType"
                 @input="handleSearch"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                style="font-family: '正阳', 'Microsoft YaHei', sans-serif;"
               />
             </div>
             <div class="flex-1">
@@ -121,6 +122,7 @@
                 v-model="localSearch.description"
                 @input="handleSearch"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                style="font-family: '正阳', 'Microsoft YaHei', sans-serif;"
               />
             </div>
             <button @click="handleResetSearch" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap">
@@ -395,9 +397,9 @@ export default {
         return;
       }
 
-      // 超级用户不能被停用
+      // 主管不能被停用
       if (this.user.role === 0) {
-        showError('超级账户不能被停用', '操作失败');
+        showError('主管不能被停用', '操作失败');
         return;
       }
 

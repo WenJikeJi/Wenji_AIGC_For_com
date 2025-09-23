@@ -1,5 +1,4 @@
-<template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+<template><div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
     <!-- 顶部导航 - 增强的毛玻璃效果 -->
     <header class="fixed top-0 left-0 right-0 bg-white/60 backdrop-blur-xl border-b border-white/30 shadow-sm z-50 transition-all duration-500">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -11,11 +10,24 @@
           
           <!-- 桌面端导航 -->
           <nav class="hidden md:flex space-x-8">
-            <a href="#features" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors">产品特性</a>
-            <a href="#showcase" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors">功能展示</a>
-            <a href="#solutions" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors">解决方案</a>
-            <a href="#customers" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors">客户案例</a>
-            <a href="#pricing" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors">价格方案</a>
+            <a href="#social-media" class="text-gray-700 hover:text-blue-600 text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-share-alt mr-1 text-xs"></i>社媒管理
+            </a>
+            <a href="#influencer" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-users mr-1 text-xs"></i>红人资源
+            </a>
+            <a href="#advertising" class="text-gray-700 hover:text-green-600 text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-bullhorn mr-1 text-xs"></i>广告投放
+            </a>
+            <a href="#products" class="text-gray-700 hover:text-orange-600 text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-shopping-bag mr-1 text-xs"></i>商品管理
+            </a>
+            <a href="#orders" class="text-gray-700 hover:text-indigo-600 text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-chart-bar mr-1 text-xs"></i>订单分析
+            </a>
+            <a href="#ai-assistant" class="text-gray-700 hover:text-pink-600 text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-robot mr-1 text-xs"></i>AI助手
+            </a>
           </nav>
           
           <div class="hidden md:flex items-center space-x-4">
@@ -29,11 +41,10 @@
             </div>
             <!-- 未登录状态 -->
             <div v-else>
-              <button class="px-4 py-2 bg-white text-blue-600 border border-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors" @click="goToLogin">
+              <button class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors" @click="goToLogin">
                 登录
               </button>
             </div>
-            <button class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity" @click="goToProject">进入项目</button>
           </div>
           
           <!-- 移动端菜单按钮 -->
@@ -45,65 +56,167 @@
     </header>
 
     <!-- 英雄区域 -->
-    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
-      <div class="container mx-auto">
+    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+      <!-- 背景装饰 -->
+      <div class="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
+      <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
+      
+      <div class="container mx-auto relative z-10">
         <div class="flex flex-col lg:flex-row items-center">
           <div class="w-full lg:w-1/2 mb-10 lg:mb-0 lg:pr-10">
-            <div class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mb-4">
-              AI赋能 · 全流程自动化
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 text-sm font-medium rounded-full mb-6 border border-blue-200/50">
+              <i class="fas fa-globe-americas mr-2"></i>
+              跨境电商 · AI智能管理
             </div>
             <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              AI智能管家<br />
-              <span class="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">一体化管理系统</span>
+              跨境社媒<br />
+              <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">AI智能管理平台</span>
             </h1>
-            <p class="text-lg text-gray-600 mb-8 leading-relaxed">
-              集成社交媒体运营、广告投放、商品上架与数据分析，
-              AI赋能全流程自动化，助力企业高效运营和业务增长。
+            <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+              整合<strong>社媒运营</strong>、<strong>红人合作</strong>、<strong>广告投放</strong>、<strong>商品管理</strong>、<strong>订单分析</strong>五大核心板块，
+              AI赋能全流程自动化，助力跨境电商高效出海。
             </p>
+            
+            <!-- 核心数据展示 -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">50+</div>
+                <div class="text-sm text-gray-500">海外平台</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">1000+</div>
+                <div class="text-sm text-gray-500">企业用户</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-indigo-600">95%</div>
+                <div class="text-sm text-gray-500">效率提升</div>
+              </div>
+            </div>
+            
             <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <button class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg font-medium hover:opacity-90 transition-opacity shadow-lg shadow-blue-500/20" @click="goToProject">
-                进入项目
+              <button class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-blue-500/25 transform hover:scale-105" @click="goToProject">
+                <i class="fas fa-rocket mr-2"></i>立即开始
               </button>
-              <button class="px-6 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
-                <i class="fas fa-play-circle text-purple-600 mr-2"></i>观看演示
+              <button class="px-8 py-4 bg-white text-gray-900 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 flex items-center justify-center">
+                <i class="fas fa-play-circle text-blue-600 mr-2"></i>产品演示
               </button>
             </div>
-            <div class="mt-10 flex items-center space-x-6">
-              <div class="flex -space-x-2">
-                <img src="https://picsum.photos/id/1001/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
-                <img src="https://picsum.photos/id/1002/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
-                <img src="https://picsum.photos/id/1003/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
-                <img src="https://picsum.photos/id/1004/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
-              </div>
-              <div>
-                <div class="flex items-center mb-1">
-                  <div class="flex">
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                  </div>
-                  <span class="ml-2 text-sm font-medium text-gray-900">4.9/5</span>
+            
+            <!-- 信任指标 -->
+            <div class="mt-10 flex items-center space-x-8">
+              <div class="flex items-center space-x-2">
+                <div class="flex -space-x-1">
+                  <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">A</div>
+                  <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-bold">B</div>
+                  <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">C</div>
+                  <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">+</div>
                 </div>
-                <p class="text-xs text-gray-500">来自超过1000+满意客户</p>
+                <div>
+                  <div class="flex items-center">
+                    <div class="flex text-yellow-400">
+                      <i class="fas fa-star text-sm"></i>
+                      <i class="fas fa-star text-sm"></i>
+                      <i class="fas fa-star text-sm"></i>
+                      <i class="fas fa-star text-sm"></i>
+                      <i class="fas fa-star text-sm"></i>
+                    </div>
+                    <span class="ml-2 text-sm font-semibold text-gray-900">4.9/5</span>
+                  </div>
+                  <p class="text-xs text-gray-500">1000+企业信赖</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <i class="fas fa-shield-check text-green-500"></i>
+                <span>企业级安全认证</span>
               </div>
             </div>
           </div>
+          
           <div class="w-full lg:w-1/2">
             <div class="relative">
-              <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-2xl blur-3xl"></div>
-              <img src="https://picsum.photos/id/1/800/600" alt="平台预览" class="relative z-10 w-full h-auto rounded-2xl shadow-2xl">
-              <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-lg z-20 hidden md:block">
+              <!-- 主要展示图 -->
+              <div class="relative bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-8 border border-gray-200/50">
+                <!-- 模拟界面 -->
+                <div class="space-y-4">
+                  <!-- 顶部导航栏 -->
+                  <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                      <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-globe text-white text-sm"></i>
+                      </div>
+                      <span class="font-semibold text-gray-900">跨境管理平台</span>
+                    </div>
+                    <div class="flex space-x-1">
+                      <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                      <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                  </div>
+                  
+                  <!-- 核心功能卡片 -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-share-alt text-blue-600"></i>
+                        <span class="text-sm font-medium text-blue-900">社媒管理</span>
+                      </div>
+                      <div class="text-xs text-blue-700">多平台统一发布</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-users text-purple-600"></i>
+                        <span class="text-sm font-medium text-purple-900">红人合作</span>
+                      </div>
+                      <div class="text-xs text-purple-700">智能匹配推荐</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-bullhorn text-green-600"></i>
+                        <span class="text-sm font-medium text-green-900">广告投放</span>
+                      </div>
+                      <div class="text-xs text-green-700">AI优化投放</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-shopping-bag text-orange-600"></i>
+                        <span class="text-sm font-medium text-orange-900">商品管理</span>
+                      </div>
+                      <div class="text-xs text-orange-700">智能上架下架</div>
+                    </div>
+                  </div>
+                  
+                  <!-- 数据展示 -->
+                  <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-sm font-medium text-gray-900">实时数据</span>
+                      <span class="text-xs text-green-600 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>+24.5%
+                      </span>
+                    </div>
+                    <div class="flex space-x-4">
+                      <div class="flex-1 bg-blue-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-500 h-full w-3/4 rounded-full"></div>
+                      </div>
+                      <div class="flex-1 bg-purple-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-purple-500 h-full w-2/3 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 浮动元素 -->
+              <div class="absolute -top-4 -right-4 bg-white p-3 rounded-xl shadow-lg border border-gray-200 animate-bounce">
                 <div class="flex items-center space-x-2">
-                  <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span class="text-xs font-medium text-gray-900">AI实时分析</span>
                 </div>
-                <div class="mt-2">
-                  <p class="text-xs text-gray-900 font-medium">实时数据分析</p>
-                  <p class="text-xs text-green-600">+12.5% 性能提升</p>
-                </div>
+              </div>
+              
+              <div class="absolute -bottom-4 -left-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white p-3 rounded-xl shadow-lg">
+                <div class="text-xs font-medium">订单转化率</div>
+                <div class="text-lg font-bold">+32.8%</div>
               </div>
             </div>
           </div>
@@ -126,82 +239,407 @@
       </div>
     </section>
 
-    <!-- 产品特性 -->
-    <section id="features" class="py-20 bg-gray-50">
+    <!-- 五大核心业务板块 -->
+    <section id="features" class="py-20 bg-white">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mb-4">
-            核心优势
+        <div class="text-center max-w-4xl mx-auto mb-16">
+          <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 text-sm font-medium rounded-full mb-6">
+            <i class="fas fa-rocket mr-2"></i>
+            五大核心业务板块
           </div>
           <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            为什么选择我们的AI智能管理系统
+            全流程AI智能管理解决方案
           </h2>
           <p class="text-lg text-gray-600">
-            我们提供全方位的AI智能解决方案，从内容创作到广告投放，从商品上架到订单分析，
-            赋能全流程自动化，提升运营效率和业务表现。
+            从社媒运营到订单分析，AI赋能每个环节，助力跨境电商高效出海
           </p>
         </div>
+      </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- 特性卡片1 -->
-          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-              <i class="fas fa-post-it text-2xl text-blue-600"></i>
+        <!-- 水平滚动容器 -->
+        <div class="relative mb-16">
+          <!-- 滚动容器 - 只显示3个卡片 -->
+          <div class="overflow-hidden max-w-7xl mx-auto">
+            <div class="flex animate-scroll-infinite gap-10" style="width: calc(400px * 10);">
+              <!-- 第一组卡片 -->
+              <div id="social-media" class="group bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-96">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-blue-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-share-alt text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">跨境社媒管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    统一管理Facebook、Instagram、TikTok等海外主流平台，支持内容发布日历、互动回复、数据监控
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-blue-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>多平台账号矩阵管理</span>
+                    </div>
+                    <div class="flex items-center text-xs text-blue-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI内容生成与发布</span>
+                    </div>
+                    <div class="flex items-center text-xs text-blue-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>实时数据监控分析</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md text-sm" @click="goToProject">
+                    进入社媒管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="influencer" class="group bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-400/10 to-purple-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-users text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">红人资源管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    智能匹配推荐红人资源，管理合作进度，AI分析红人质量，提升合作效率和ROI
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-purple-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>红人资源库分类管理</span>
+                    </div>
+                    <div class="flex items-center text-xs text-purple-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI智能匹配推荐</span>
+                    </div>
+                    <div class="flex items-center text-xs text-purple-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>合作效果预估分析</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-md text-sm">
+                    红人库管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="advertising" class="group bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400/10 to-green-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-bullhorn text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">广告全流程管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    AI智能创建广告计划，自动生成素材，实时监控效果，优化投放策略提升ROI
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-green-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>多平台广告智能创建</span>
+                    </div>
+                    <div class="flex items-center text-xs text-green-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI素材生成与优化</span>
+                    </div>
+                    <div class="flex items-center text-xs text-green-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>实时效果监控预警</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-md text-sm">
+                    广告计划管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="products" class="group bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl border border-orange-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-400/10 to-orange-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-shopping-bag text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">商品AI智能管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    AI智能上架下架，自动优化商品信息，标签补全，提升商品在各平台的曝光和转化
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-orange-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI智能上架优化</span>
+                    </div>
+                    <div class="flex items-center text-xs text-orange-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>商品标签自动补全</span>
+                    </div>
+                    <div class="flex items-center text-xs text-orange-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>下架风险智能预警</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md text-sm">
+                    商品管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="orders" class="group bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-2xl border border-indigo-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-400/10 to-indigo-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-chart-line text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">订单管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    AI分析订单数据，异常识别预警，深度分析销量趋势，提供精准的业务洞察
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-indigo-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>订单状态智能跟踪</span>
+                    </div>
+                    <div class="flex items-center text-xs text-indigo-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI异常订单识别</span>
+                    </div>
+                    <div class="flex items-center text-xs text-indigo-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>销量数据深度分析</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 shadow-md text-sm" @click="goToDataPage">
+                    订单分析
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 重复第二组卡片实现无缝循环 -->
+              <div id="social-media-2" class="group bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-blue-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-share-alt text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">跨境社媒管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    统一管理Facebook、Instagram、TikTok等海外主流平台，支持内容发布日历、互动回复、数据监控
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-blue-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>多平台账号矩阵管理</span>
+                    </div>
+                    <div class="flex items-center text-xs text-blue-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI内容生成与发布</span>
+                    </div>
+                    <div class="flex items-center text-xs text-blue-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>实时数据监控分析</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md text-sm" @click="goToProject">
+                    进入社媒管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="influencer-2" class="group bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-400/10 to-purple-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-users text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">红人资源管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    智能匹配推荐红人资源，管理合作进度，AI分析红人质量，提升合作效率和ROI
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-purple-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>红人资源库分类管理</span>
+                    </div>
+                    <div class="flex items-center text-xs text-purple-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI智能匹配推荐</span>
+                    </div>
+                    <div class="flex items-center text-xs text-purple-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>合作效果预估分析</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-md text-sm">
+                    红人库管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="advertising-2" class="group bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400/10 to-green-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-bullhorn text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">广告全流程管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    AI智能创建广告计划，自动生成素材，实时监控效果，优化投放策略提升ROI
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-green-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>多平台广告智能创建</span>
+                    </div>
+                    <div class="flex items-center text-xs text-green-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI素材生成与优化</span>
+                    </div>
+                    <div class="flex items-center text-xs text-green-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>实时效果监控预警</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-md text-sm">
+                    广告计划管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="products-2" class="group bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl border border-orange-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-400/10 to-orange-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-shopping-bag text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">商品AI智能管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    AI智能上架下架，自动优化商品信息，标签补全，提升商品在各平台的曝光和转化
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-orange-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI智能上架优化</span>
+                    </div>
+                    <div class="flex items-center text-xs text-orange-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>商品标签自动补全</span>
+                    </div>
+                    <div class="flex items-center text-xs text-orange-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>下架风险智能预警</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md text-sm">
+                    商品管理
+                  </button>
+                </div>
+              </div>
+              
+              <div id="orders-2" class="group bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-2xl border border-indigo-200 hover:shadow-xl hover:scale-105 transition-all duration-300 relative overflow-hidden flex-shrink-0 w-80">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-400/10 to-indigo-600/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10">
+                  <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-chart-line text-xl text-white"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-3">订单管理</h3>
+                  <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                    AI分析订单数据，异常识别预警，深度分析销量趋势，提供精准的业务洞察
+                  </p>
+                  <div class="space-y-1 mb-4">
+                    <div class="flex items-center text-xs text-indigo-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>订单状态智能跟踪</span>
+                    </div>
+                    <div class="flex items-center text-xs text-indigo-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>AI异常订单识别</span>
+                    </div>
+                    <div class="flex items-center text-xs text-indigo-700">
+                      <i class="fas fa-check-circle mr-2"></i>
+                      <span>销量数据深度分析</span>
+                    </div>
+                  </div>
+                  <button class="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 shadow-md text-sm" @click="goToDataPage">
+                    订单分析
+                  </button>
+                </div>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">社交媒体管理</h3>
-            <p class="text-gray-600">
-              统一管理多平台社交媒体帖子发布、评论互动，实时数据分析，提升品牌影响力。
-            </p>
           </div>
+        </div>
+        
+        <!-- AI助手能力展示 - 优化版 -->
+        <div id="ai-assistant" class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-8 md:p-12 relative overflow-hidden border border-blue-100">
+          <!-- 装饰性背景元素 -->
+          <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl"></div>
+          <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-indigo-100/40 to-cyan-100/40 rounded-full blur-3xl"></div>
           
-          <!-- 特性卡片2 -->
-          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
-              <i class="fas fa-image text-2xl text-purple-600"></i>
+          <div class="relative z-10">
+            <div class="text-center mb-12">
+              <div class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-full mb-6 shadow-lg">
+                <i class="fas fa-robot mr-2"></i>
+                AI智能助手矩阵
+              </div>
+              <h3 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
+                五大AI助手，<span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">智能化全覆盖</span>
+              </h3>
+              <p class="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
+                每个业务板块都配备专属AI助手，从内容创作到数据分析，全方位提升运营效率
+              </p>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">AI内容生成</h3>
-            <p class="text-gray-600">
-              通过AI自动化生成高质量帖子图片、FEED图和短视频，提升内容创作效率。
-            </p>
-          </div>
-          
-          <!-- 特性卡片3 -->
-          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center mb-6">
-              <i class="fas fa-bullhorn text-2xl text-green-600"></i>
+            
+            <!-- 响应式网格布局 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              <div class="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-blue-200/50 hover:border-blue-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <i class="fas fa-pen-fancy text-white text-xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-3 text-gray-900">AI内容助手</h4>
+                <p class="text-gray-600 text-sm leading-relaxed">自动生成社媒文案、短视频脚本，热点预测推荐</p>
+              </div>
+              
+              <div class="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-purple-200/50 hover:border-purple-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <i class="fas fa-user-friends text-white text-xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-3 text-gray-900">AI红人分析</h4>
+                <p class="text-gray-600 text-sm leading-relaxed">红人质量评分，粉丝真实性检测，合作效果预估</p>
+              </div>
+              
+              <div class="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-green-200/50 hover:border-green-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <i class="fas fa-ad text-white text-xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-3 text-gray-900">AI广告助手</h4>
+                <p class="text-gray-600 text-sm leading-relaxed">智能素材生成，效果分析优化，合规监管检测</p>
+              </div>
+              
+              <div class="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-orange-200/50 hover:border-orange-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <i class="fas fa-box text-white text-xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-3 text-gray-900">AI商品助手</h4>
+                <p class="text-gray-600 text-sm leading-relaxed">智能上架优化，标签自动补全，下架风险预警</p>
+              </div>
+              
+              <div class="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-indigo-200/50 hover:border-indigo-300 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <i class="fas fa-chart-bar text-white text-xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-3 text-gray-900">AI订单看板</h4>
+                <p class="text-gray-600 text-sm leading-relaxed">异常订单识别，数据深度分析，业务洞察报告</p>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">广告投放管理</h3>
-            <p class="text-gray-600">
-              自动化配置和管理广告投放，AI生成广告素材，实时监控广告效果并优化。
-            </p>
           </div>
+        </div>
+      </section>
+
+
           
-          <!-- 特性卡片4 -->
-          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 bg-amber-100 rounded-lg flex items-center justify-center mb-6">
-              <i class="fas fa-shopping-bag text-2xl text-amber-600"></i>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">商品AI上架</h3>
-            <p class="text-gray-600">
-              支持1688商品采集，AI智能定价，自动完成多平台商品上架流程。
-            </p>
-          </div>
-          
-          <!-- 特性卡片5 -->
-          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center mb-6">
-              <i class="fas fa-shopping-cart text-2xl text-red-600"></i>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">订单分析</h3>
-            <p class="text-gray-600">
-              通过AI分析订单数据，对商品销量进行深度分析，提供精准的业务洞察。
-            </p>
-          </div>
-          
-          <!-- 特性卡片6 -->
-          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
-              <i class="fas fa-chart-line text-2xl text-indigo-600"></i>
+    <!-- 特性卡片6 - 广告扩量策略 -->
+    <section id="advertising" class="py-20 bg-gray-50">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gradient-to-br from-indigo-50 to-violet-100 p-8 rounded-xl shadow-sm border border-indigo-200 hover:shadow-lg hover:scale-105 transition-all duration-300">
+            <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center mb-6 shadow-lg">
+              <i class="fas fa-rocket text-2xl text-white"></i>
             </div>
             <h3 class="text-xl font-semibold text-gray-900 mb-4">广告扩量策略</h3>
             <p class="text-gray-600">
@@ -209,17 +647,16 @@
             </p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 功能展示 -->
-    <section id="showcase" class="py-20 bg-white">
+    <!-- 数据统计 -->
+    <section id="stats" class="py-20 bg-gray-50">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col lg:flex-row items-center gap-12">
           <div class="w-full lg:w-1/2">
             <div class="relative">
               <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-3xl"></div>
-              <img src="https://picsum.photos/id/2/800/600" alt="功能展示" class="relative z-10 w-full h-auto rounded-2xl shadow-2xl">
+              <img src="https://picsum.photos/id/2/800/600" alt="功能展示" class="relative z-10 w-full h-auto rounded-2xl shadow-2xl" />
             </div>
           </div>
           <div class="w-full lg:w-1/2">
@@ -295,7 +732,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <!-- 解决方案1 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-            <img src="https://picsum.photos/id/3/600/400" alt="金融解决方案" class="w-full h-48 object-cover">
+            <img src="https://picsum.photos/id/3/600/400" alt="金融解决方案" class="w-full h-48 object-cover" />
             <div class="p-6">
               <h3 class="text-xl font-semibold text-gray-900 mb-3">金融行业解决方案</h3>
               <p class="text-gray-600 mb-4">
@@ -310,7 +747,7 @@
           
           <!-- 解决方案2 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-            <img src="https://picsum.photos/id/4/600/400" alt="零售解决方案" class="w-full h-48 object-cover">
+            <img src="https://picsum.photos/id/4/600/400" alt="零售解决方案" class="w-full h-48 object-cover" />
             <div class="p-6">
               <h3 class="text-xl font-semibold text-gray-900 mb-3">零售行业解决方案</h3>
               <p class="text-gray-600 mb-4">
@@ -325,7 +762,7 @@
           
           <!-- 解决方案3 -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-            <img src="https://picsum.photos/id/5/600/400" alt="医疗解决方案" class="w-full h-48 object-cover">
+            <img src="https://picsum.photos/id/5/600/400" alt="医疗解决方案" class="w-full h-48 object-cover" />
             <div class="p-6">
               <h3 class="text-xl font-semibold text-gray-900 mb-3">医疗健康解决方案</h3>
               <p class="text-gray-600 mb-4">
@@ -360,7 +797,7 @@
           <!-- 客户案例1 -->
           <div class="bg-gray-50 p-8 rounded-xl">
             <div class="flex items-center mb-6">
-              <img src="https://picsum.photos/id/10/100/100" alt="客户Logo" class="w-16 h-16 object-contain mr-4">
+              <img src="https://picsum.photos/id/10/100/100" alt="客户Logo" class="w-16 h-16 object-contain mr-4" />
               <div>
                 <h3 class="text-xl font-semibold text-gray-900">某知名金融机构</h3>
                 <p class="text-gray-500">风险控制与客户分析</p>
@@ -370,7 +807,7 @@
               "通过使用智能多维数据分析平台，我们成功降低了30%的信贷风险，同时提升了25%的客户满意度。平台的AI分析能力帮助我们发现了以前被忽略的客户需求和市场机会。"
             </p>
             <div class="flex items-center">
-              <img src="https://picsum.photos/id/1005/100/100" alt="客户代表" class="w-12 h-12 rounded-full mr-4">
+              <img src="https://picsum.photos/id/1005/100/100" alt="客户代表" class="w-12 h-12 rounded-full mr-4" />
               <div>
                 <p class="font-medium text-gray-900">张明</p>
                 <p class="text-sm text-gray-500">风险控制总监</p>
@@ -381,7 +818,7 @@
           <!-- 客户案例2 -->
           <div class="bg-gray-50 p-8 rounded-xl">
             <div class="flex items-center mb-6">
-              <img src="https://picsum.photos/id/11/100/100" alt="客户Logo" class="w-16 h-16 object-contain mr-4">
+              <img src="https://picsum.photos/id/11/100/100" alt="客户Logo" class="w-16 h-16 object-contain mr-4" />
               <div>
                 <h3 class="text-xl font-semibold text-gray-900">大型零售连锁品牌</h3>
                 <p class="text-gray-500">销售预测与库存优化</p>
@@ -391,7 +828,7 @@
               "多维数据分析平台帮助我们实现了精准的销售预测和库存优化，减少了15%的库存成本，同时提高了产品周转率和客户满意度。实时数据分析功能让我们能够快速响应市场变化。"
             </p>
             <div class="flex items-center">
-              <img src="https://picsum.photos/id/1006/100/100" alt="客户代表" class="w-12 h-12 rounded-full mr-4">
+              <img src="https://picsum.photos/id/1006/100/100" alt="客户代表" class="w-12 h-12 rounded-full mr-4" />
               <div>
                 <p class="font-medium text-gray-900">李婷</p>
                 <p class="text-sm text-gray-500">供应链总监</p>
@@ -614,6 +1051,8 @@
     </section>
 
     <!-- 页脚 - 增强视觉效果 -->
+    </div>
+
     <footer class="bg-blue-950 text-blue-300 py-16 relative overflow-hidden">
       <!-- 背景装饰 -->
       <div class="absolute inset-0 overflow-hidden opacity-20">
@@ -682,11 +1121,10 @@
         </div>
         
         <div class="mt-12 pt-8 border-t border-blue-800/50 text-center">
-          <p class="text-blue-400/70">&copy; 2024 AI智能管家 - 一体化管理系统. 保留所有权利.</p>
+          <p class="text-blue-400/70">&copy; 2025 AI智能管家 - 一体化管理系统. 保留所有权利.</p>
         </div>
       </div>
     </footer>
-  </div>
 </template>
 
 <script>
@@ -758,8 +1196,17 @@ export default {
       window.location.hash = '#/login';
     },
     
-    // 跳转到项目页面（数据页面）
+    // 跳转到项目页面（社媒管理页面）
     goToProject() {
+      if (this.isLoggedIn) {
+        window.location.hash = '#/social-media';
+      } else {
+        window.location.hash = '#/login';
+      }
+    },
+    
+    // 跳转到数据分析页面
+    goToDataPage() {
       if (this.isLoggedIn) {
         window.location.hash = '#/data';
       } else {
@@ -838,6 +1285,25 @@ header .container {
   animation: bounce 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* 水平滚动动画 */
+@keyframes scroll-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-infinite {
+  animation: scroll-infinite 30s linear infinite;
+}
+
+/* 鼠标悬停时暂停动画 */
+.animate-scroll-infinite:hover {
+  animation-play-state: paused;
+}
+
 /* 价格方案卡片优化 */
 #pricing .grid {
   transition: all 0.3s ease;
@@ -864,6 +1330,11 @@ header .container {
   
   .hero-image {
     margin-top: 2rem;
+  }
+  
+  /* 移动端滚动优化 */
+  .animate-scroll-infinite {
+    animation-duration: 20s;
   }
 }
 

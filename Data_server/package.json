@@ -1,7 +1,7 @@
 {
   "name": "wenji-data-server",
   "version": "1.0.0",
-  "description": "Wenji Data Server - 社交媒体管理系统后端",
+  "description": "Wenji Data Server - 社媒管理系统后端",
   "main": "init_databases.js",
   "type": "commonjs",
   "scripts": {

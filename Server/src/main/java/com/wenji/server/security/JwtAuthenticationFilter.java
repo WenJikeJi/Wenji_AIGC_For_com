@@ -43,6 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         "/api/auth/forgot-password",
         "/api/auth/reset-password",
         "/api/auth/feishu",
+        "/api/auth/captcha",
+        "/api/auth/captcha/verify",
+        "/api/social/facebook/callback",
+        "/api/social/facebook/auth-url",
         "/swagger-ui",
         "/v3/api-docs"
     );
@@ -52,16 +56,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         
         String requestPath = request.getRequestURI();
-        logger.debug("处理请求路径: {}", requestPath);
+        logger.info("JWT过滤器处理请求路径: {}", requestPath);
         
         // 检查是否是排除的路径
-        boolean isExcluded = EXCLUDED_PATHS.stream().anyMatch(path -> requestPath.startsWith(path));
+        boolean isExcluded = EXCLUDED_PATHS.stream().anyMatch(path -> {
+            boolean matches = requestPath.startsWith(path);
+            logger.info("检查路径 {} 是否匹配排除路径 {}: {}", requestPath, path, matches);
+            return matches;
+        });
         
         if (isExcluded) {
-            logger.debug("路径 {} 被排除，跳过JWT验证", requestPath);
+            logger.info("路径 {} 被排除，跳过JWT验证", requestPath);
             filterChain.doFilter(request, response);
             return;
         }
+        
+        logger.info("路径 {} 需要JWT验证", requestPath);
         
         final String authorizationHeader = request.getHeader("Authorization");
         
@@ -76,33 +86,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 logger.error("JWT令牌解析失败: {}", e.getMessage());
             }
+        } else {
+            logger.warn("Authorization头缺失或格式错误: {}", authorizationHeader);
         }
         
         // 验证令牌并设置安全上下文
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            
-            if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
-                // 从JWT中提取用户信息并设置到request属性中
-                try {
-                    Long userId = jwtUtil.getUserIdFromToken(jwt);
-                    Integer role = jwtUtil.getUserRoleFromToken(jwt);
-                    
-                    // 设置request属性，供Controller使用
-                    request.setAttribute("userId", userId);
-                    request.setAttribute("role", role);
-                    
-                    logger.debug("JWT验证成功，用户ID: {}, 角色: {}", userId, role);
-                } catch (Exception e) {
-                    logger.error("从JWT中提取用户信息失败: {}", e.getMessage());
-                }
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
+                    // 从JWT中提取用户信息并设置到request属性中
+                    try {
+                        Long userId = jwtUtil.getUserIdFromToken(jwt);
+                        Integer role = jwtUtil.getUserRoleFromToken(jwt);
+                        
+                        // 设置request属性，供Controller使用
+                        request.setAttribute("userId", userId);
+                        request.setAttribute("role", role);
+                        
+                        logger.debug("JWT验证成功，用户ID: {}, 角色: {}", userId, role);
+                    } catch (Exception e) {
+                        logger.error("从JWT中提取用户信息失败: {}", e.getMessage());
+                    }
+                    
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    usernamePasswordAuthenticationToken
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                } else {
+                    logger.warn("JWT令牌验证失败");
+                }
+            } catch (Exception e) {
+                logger.error("用户验证过程中发生错误: {}", e.getMessage());
             }
+        } else {
+            logger.warn("JWT令牌缺失或已过期，请求路径: {}", requestPath);
         }
         
         filterChain.doFilter(request, response);

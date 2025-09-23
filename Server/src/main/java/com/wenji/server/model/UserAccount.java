@@ -59,6 +59,22 @@ public class UserAccount {
     @Column(nullable = false)
     private Integer status; // 1 = 正常，0 = 禁用
     
+    // 新增字段支持子账户状态管理
+    @Column(name = "account_status", length = 20)
+    private String accountStatus; // NORMAL, STOPPED, INVITING, INVALID, INVITE_FAILED
+    
+    @Column(name = "invite_email", length = 100)
+    private String inviteEmail; // 邀请的邮箱地址
+    
+    @Column(name = "invite_create_time")
+    private LocalDateTime inviteCreateTime; // 邀请创建时间
+    
+    @Column(name = "temp_password", length = 50)
+    private String tempPassword; // 临时密码（首次登录用）
+    
+    @Column(name = "updated_time")
+    private LocalDateTime updatedTime; // 更新时间
+    
     @Column(name = "rsa_public_key", columnDefinition = "TEXT")
     private String rsaPublicKey;
     
@@ -169,5 +185,46 @@ public class UserAccount {
     
     public void setRsaPublicKey(String rsaPublicKey) {
         this.rsaPublicKey = rsaPublicKey;
+    }
+    
+    // 新增字段的getter和setter方法
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+    
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+    
+    public String getInviteEmail() {
+        return inviteEmail;
+    }
+    
+    public void setInviteEmail(String inviteEmail) {
+        this.inviteEmail = inviteEmail;
+    }
+    
+    public LocalDateTime getInviteCreateTime() {
+        return inviteCreateTime;
+    }
+    
+    public void setInviteCreateTime(LocalDateTime inviteCreateTime) {
+        this.inviteCreateTime = inviteCreateTime;
+    }
+    
+    public String getTempPassword() {
+        return tempPassword;
+    }
+    
+    public void setTempPassword(String tempPassword) {
+        this.tempPassword = tempPassword;
+    }
+    
+    public LocalDateTime getUpdatedTime() {
+        return updatedTime;
+    }
+    
+    public void setUpdatedTime(LocalDateTime updatedTime) {
+        this.updatedTime = updatedTime;
     }
 }
