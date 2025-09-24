@@ -51,6 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         "/api/social/facebook/save-token",
         "/api/social/facebook/verify-token",
         "/api/social/facebook/validate-token",
+        "/api/social-media/facebook/verify-token",
         "/api/social-platforms/status",
         "/swagger-ui",
         "/v3/api-docs"

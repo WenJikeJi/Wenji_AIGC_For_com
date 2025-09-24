@@ -429,7 +429,7 @@ const validateToken = async () => {
     } else {
       // 对于其他平台，使用通用的验证接口
       response = await Promise.race([
-        request(`api/social/${props.platform}/verify-token`, 'POST', {
+        request(`api/social-media/${props.platform}/verify-token`, 'POST', {
           token: form.accessToken
         }),
         timeoutPromise

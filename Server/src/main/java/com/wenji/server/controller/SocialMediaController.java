@@ -338,7 +338,6 @@ public class SocialMediaController {
     @Operation(
             summary = "验证Facebook令牌",
             description = "验证Facebook访问令牌的有效性",
-            security = @SecurityRequirement(name = "bearerAuth"),
             tags = {"社交媒体管理"}
     )
     @ApiResponses({
@@ -356,7 +355,7 @@ public class SocialMediaController {
             logger.info("收到原始请求体: {}", rawRequestBody);
             
             // 手动解析JSON
-            Map<String, String> requestBody = new HashMap<>();
+            Map<String, String> requestBody = new java.util.HashMap<>();
             if (rawRequestBody != null && !rawRequestBody.trim().isEmpty()) {
                 try {
                     ObjectMapper objectMapper = new ObjectMapper();

@@ -13,7 +13,7 @@ export default {
   server: {
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8080',
+        target: 'http://127.0.0.1:8081',
         changeOrigin: true,
         // 不要移除/api前缀，因为后端API路径包含/api
         rewrite: (path) => path

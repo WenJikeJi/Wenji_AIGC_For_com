@@ -1038,8 +1038,8 @@ export const socialMediaAPI = {
    * @returns {Promise} - 返回验证结果
    */
   verifyFBToken: async (params) => {
-    // Java后端路径: /api/social/facebook/verify-token
-    return request('api/social/facebook/verify-token', 'POST', params);
+    // Java后端路径: /api/social-media/facebook/verify-token
+    return request('api/social-media/facebook/verify-token', 'POST', params);
   },
   
   /**
