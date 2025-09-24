@@ -78,6 +78,13 @@ public class UserAccount {
     @Column(name = "rsa_public_key", columnDefinition = "TEXT")
     private String rsaPublicKey;
     
+    // 新增phone和avatar字段
+    @Column(name = "phone", length = 20)
+    private String phone; // 手机号码
+    
+    @Column(name = "avatar", length = 500)
+    private String avatar; // 用户头像URL
+    
     // Getters and Setters
     public Long getId() {
         return id;
@@ -226,5 +233,22 @@ public class UserAccount {
     
     public void setUpdatedTime(LocalDateTime updatedTime) {
         this.updatedTime = updatedTime;
+    }
+    
+    // phone和avatar字段的getter和setter方法
+    public String getPhone() {
+        return phone;
+    }
+    
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+    
+    public String getAvatar() {
+        return avatar;
+    }
+    
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

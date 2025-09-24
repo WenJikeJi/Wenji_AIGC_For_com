@@ -387,6 +387,37 @@ public class AuthController {
         }
     }
     
+    @Operation(
+            summary = "刷新JWT令牌",
+            description = "使用刷新令牌获取新的访问令牌",
+            tags = {"认证"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "令牌刷新成功"),
+            @ApiResponse(responseCode = "400", description = "刷新令牌无效或已过期")
+    })
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "刷新令牌请求参数",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    example = "{\"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"}"
+                            )
+                    )
+            )
+            @RequestBody Map<String, Object> requestBody) {
+        try {
+            String refreshToken = (String) requestBody.get("refreshToken");
+            Map<String, Object> result = authService.refreshToken(refreshToken);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // 获取客户端IP
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");

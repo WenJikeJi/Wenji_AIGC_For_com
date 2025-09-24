@@ -13,6 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -205,7 +207,9 @@ public class InstagramApiService {
      * 验证访问令牌
      */
     public boolean validateAccessToken(String accessToken, String instagramAccountId) {
-        String url = instagramApiBaseUrl + "/" + instagramAccountId + "?fields=id,username&access_token=" + accessToken;
+        // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+        String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+        String url = instagramApiBaseUrl + "/" + instagramAccountId + "?fields=id,username&access_token=" + encodedAccessToken;
         
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -221,8 +225,11 @@ public class InstagramApiService {
      */
     public List<Map<String, Object>> getInstagramBusinessPages(String facebookPageId, String accessToken) {
         try {
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            
             // 获取Facebook页面关联的Instagram账号
-            String url = instagramApiBaseUrl + "/" + facebookPageId + "/instagram_business_account?fields=id,username,name&access_token=" + accessToken;
+            String url = instagramApiBaseUrl + "/" + facebookPageId + "/instagram_business_account?fields=id,username,name&access_token=" + encodedAccessToken;
             
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             
@@ -278,7 +285,9 @@ public class InstagramApiService {
      */
     public Map<String, Object> getInstagramPageInfo(String instagramAccountId, String accessToken) {
         try {
-            String url = instagramApiBaseUrl + "/" + instagramAccountId + "?fields=id,username,name&access_token=" + accessToken;
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            String url = instagramApiBaseUrl + "/" + instagramAccountId + "?fields=id,username,name&access_token=" + encodedAccessToken;
             
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             
@@ -384,8 +393,11 @@ public class InstagramApiService {
      * 获取Instagram主页的帖子列表
      */
     public List<Map<String, Object>> getPosts(String instagramAccountId, String accessToken) {
+        // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+        String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+        
         // 注意：Instagram API需要先获取media对象列表
-        String url = instagramApiBaseUrl + "/" + instagramAccountId + "/media?fields=id,caption,timestamp,media_url,permalink&access_token=" + accessToken;
+        String url = instagramApiBaseUrl + "/" + instagramAccountId + "/media?fields=id,caption,timestamp,media_url,permalink&access_token=" + encodedAccessToken;
         
         try {
             logger.info("获取Instagram主页帖子列表，URL: {}", url);
@@ -450,7 +462,9 @@ public class InstagramApiService {
      * 获取Instagram帖子详情
      */
     public Map<String, Object> getPostDetails(String mediaId, String accessToken) {
-        String url = instagramApiBaseUrl + "/" + mediaId + "?fields=id,caption,timestamp,media_url,permalink,like_count,comments_count&access_token=" + accessToken;
+        // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+        String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+        String url = instagramApiBaseUrl + "/" + mediaId + "?fields=id,caption,timestamp,media_url,permalink,like_count,comments_count&access_token=" + encodedAccessToken;
         
         try {
             logger.info("获取Instagram帖子详情，URL: {}", url);
@@ -548,7 +562,9 @@ public class InstagramApiService {
      * 获取Instagram评论详情
      */
     public Map<String, Object> getCommentDetails(String commentId, String accessToken) {
-        String url = instagramApiBaseUrl + "/" + commentId + "?fields=id,text,timestamp,username&access_token=" + accessToken;
+        // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+        String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+        String url = instagramApiBaseUrl + "/" + commentId + "?fields=id,text,timestamp,username&access_token=" + encodedAccessToken;
         
         try {
             logger.info("获取Instagram评论详情，URL: {}", url);

@@ -73,6 +73,25 @@
       </a>
     </nav>
     
+    <!-- 底部系统监控按钮 - 仅系统管理员可见 -->
+    <div v-if="isSystemAdmin" class="px-3 pb-4">
+      <a 
+        href="#/system-monitor" 
+        class="flex items-center px-3 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-orange-50 hover:text-red-700 transition-all duration-300 group relative overflow-hidden border border-red-200/30"
+        :class="{ 'bg-gradient-to-r from-red-100 to-orange-100 text-red-700 shadow-lg border border-red-200/50': currentHash === '#/system-monitor' }"
+        :title="isCollapsed ? '系统监控' : ''"
+      >
+        <div v-if="currentHash === '#/system-monitor'" class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-500 to-orange-500 rounded-r"></div>
+        <div class="relative z-10 flex items-center w-full">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-300" 
+               :class="currentHash === '#/system-monitor' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md' : 'bg-gray-100 text-gray-500 group-hover:bg-gradient-to-r group-hover:from-red-500 group-hover:to-orange-500 group-hover:text-white'">
+            <i class="fas fa-desktop text-sm"></i>
+          </div>
+          <span v-if="!isCollapsed" class="truncate font-medium">系统监控</span>
+        </div>
+      </a>
+    </div>
+    
     <!-- 底部用户信息区域 - 删除重复的用户信息 -->
   </div>
 </template>
@@ -108,6 +127,10 @@ export default {
     userRoleText() {
       if (!this.currentUser) return '用户';
       return this.currentUser.role === 0 ? '超级管理员' : '成员';
+    },
+    isSystemAdmin() {
+      // 只有ken@shamillaa.com这个管理员账户可以访问系统监控
+      return this.currentUser && this.currentUser.email === 'ken@shamillaa.com';
     }
   },
   mounted() {

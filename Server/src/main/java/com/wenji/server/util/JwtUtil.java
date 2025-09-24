@@ -129,4 +129,53 @@ public class JwtUtil {
         }
         return claims;
     }
+    
+    // 刷新令牌有效期（7天）
+    private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000L;
+
+    // 生成刷新令牌
+    public String generateRefreshToken(Long userId, String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId.toString());
+        claims.put("type", "refresh");
+        
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
+                .compact();
+    }
+    
+    // 验证刷新令牌
+    public Boolean validateRefreshToken(String refreshToken, String username) {
+        try {
+            final String tokenUsername = getUsernameFromToken(refreshToken);
+            final Claims claims = getAllClaimsFromToken(refreshToken);
+            final String tokenType = claims.get("type", String.class);
+            
+            return tokenUsername.equals(username) 
+                    && "refresh".equals(tokenType) 
+                    && !isTokenExpired(refreshToken);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    // 从刷新令牌获取用户ID
+    public Long getUserIdFromRefreshToken(String refreshToken) {
+        try {
+            final Claims claims = getAllClaimsFromToken(refreshToken);
+            final String tokenType = claims.get("type", String.class);
+            
+            if (!"refresh".equals(tokenType)) {
+                throw new RuntimeException("不是有效的刷新令牌");
+            }
+            
+            return Long.parseLong(claims.get("userId", String.class));
+        } catch (Exception e) {
+            throw new RuntimeException("解析刷新令牌失败: " + e.getMessage());
+        }
+    }
 }

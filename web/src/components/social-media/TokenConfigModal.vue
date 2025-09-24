@@ -31,24 +31,7 @@
             输入您的{{ getPlatformName(platform) }}访问令牌以授权系统访问您的账户
           </p>
           
-          <!-- 可选字段说明 -->
-          <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                <i class="fas fa-magic text-purple-500 mt-0.5"></i>
-              </div>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-purple-900 mb-2">💡 关于可选字段</h3>
-                <p class="text-sm text-purple-800 mb-2">
-                  除了必填的Token外，我们还提供了一些<span class="font-semibold">可选增强项</span>，帮助您获得更好的使用体验：
-                </p>
-                <div class="text-xs text-purple-700 space-y-1">
-                  <p>• 既支持<span class="font-medium">纯Token快速关联</span>，也允许您补充信息让后续管理更便捷</p>
-                  <p>• 这些字段可根据实际需求选择填写，让系统更智能地为您服务</p>
-                </div>
-              </div>
-            </div>
-          </div>
+
           
           <!-- 使用说明卡片 -->
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -116,84 +99,53 @@
             </p>
           </div>
 
-          <!-- Token过期时间（可选） -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              <i class="fas fa-clock mr-1"></i>
-              Token过期时间（可选）
-            </label>
-            <input
-              v-model="form.expiryDate"
-              type="datetime-local"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.expiryDate }"
-            >
-            <p v-if="errors.expiryDate" class="mt-1 text-sm text-red-600">{{ errors.expiryDate }}</p>
-            <div class="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <div class="flex items-start">
-                <i class="fas fa-lightbulb text-amber-500 mt-0.5 mr-2"></i>
-                <div class="text-xs text-amber-800">
-                  <p class="font-medium mb-1">为什么建议填写过期时间？</p>
-                  <p class="mb-1">• <span class="font-medium">不填写：</span>Token失效时功能会突然中断，无法提前预警</p>
-                  <p>• <span class="font-medium">填写后：</span>系统会提前提醒您更新Token，避免服务异常</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- 关联主页ID（Facebook特有） -->
+
+          <!-- Facebook APP ID（Facebook特有） -->
           <div v-if="platform === 'facebook'">
             <label class="block text-sm font-medium text-gray-700 mb-2">
               <i class="fab fa-facebook-f mr-1"></i>
-              Facebook主页ID（可选）
+              Facebook APP ID <span class="text-red-500">*</span>
             </label>
             <input
-              v-model="form.pageId"
+              v-model="form.appId"
               type="text"
-              placeholder="输入Facebook主页ID..."
+              placeholder="输入Facebook应用ID..."
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.pageId }"
+              :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.appId }"
             >
-            <p v-if="errors.pageId" class="mt-1 text-sm text-red-600">{{ errors.pageId }}</p>
-            <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div class="flex items-start">
-                <i class="fab fa-facebook-f text-blue-500 mt-0.5 mr-2"></i>
-                <div class="text-xs text-blue-800">
-                  <p class="font-medium mb-1">什么时候需要填写主页ID？</p>
-                  <p class="mb-1">• <span class="font-medium">用户级Token：</span>可管理多个主页，需手动指定具体主页ID</p>
-                  <p>• <span class="font-medium">主页级Token：</span>只关联单个主页，通常可自动识别</p>
-                  <p class="text-blue-600 font-medium mt-1">💡 建议填写以确保准确关联到目标主页</p>
-                </div>
-              </div>
-            </div>
+            <p v-if="errors.appId" class="mt-1 text-sm text-red-600">{{ errors.appId }}</p>
           </div>
 
-          <!-- 账户名称 -->
-          <div>
+          <!-- Facebook APP 密钥（Facebook特有） -->
+          <div v-if="platform === 'facebook'">
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              <i class="fas fa-user mr-1"></i>
-              账户名称（可选）
+              <i class="fab fa-facebook-f mr-1"></i>
+              Facebook APP 密钥 <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="form.accountName"
-              type="text"
-              placeholder="为此账户设置一个易识别的名称..."
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.accountName }"
-            >
-            <p v-if="errors.accountName" class="mt-1 text-sm text-red-600">{{ errors.accountName }}</p>
-            <div class="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div class="flex items-start">
-                <i class="fas fa-user-tag text-green-500 mt-0.5 mr-2"></i>
-                <div class="text-xs text-green-800">
-                  <p class="font-medium mb-1">自定义名称的好处：</p>
-                  <p class="mb-1">• <span class="font-medium">自动生成：</span>可能包含ID或英文原名，不够直观</p>
-                  <p>• <span class="font-medium">手动设置：</span>便于管理多个账户时快速识别区分</p>
-                  <p class="text-green-600 font-medium mt-1">🏷️ 推荐使用易识别的中文名称</p>
-                </div>
+            <div class="relative">
+              <input
+                v-model="form.appSecret"
+                :type="showAppSecret ? 'text' : 'password'"
+                placeholder="输入Facebook应用密钥..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.appSecret }"
+              >
+              <div class="absolute top-3 right-3">
+                <button
+                  type="button"
+                  @click="toggleAppSecretVisibility"
+                  class="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="显示/隐藏密钥"
+                >
+                  <i :class="showAppSecret ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
               </div>
             </div>
+            <p v-if="errors.appSecret" class="mt-1 text-sm text-red-600">{{ errors.appSecret }}</p>
           </div>
+
+
 
           <!-- 验证状态显示 -->
           <div v-if="validationStatus" class="p-4 rounded-lg border" :class="getValidationStatusClass()">
@@ -260,6 +212,7 @@ const emit = defineEmits(['close', 'success'])
 
 // 响应式数据
 const showToken = ref(false)
+const showAppSecret = ref(false)
 const isValidating = ref(false)
 const isSaving = ref(false)
 const validationStatus = ref(null)
@@ -267,17 +220,15 @@ const validationStatus = ref(null)
 // 表单数据
 const form = reactive({
   accessToken: '',
-  expiryDate: '',
-  pageId: '', // Facebook专用
-  accountName: ''
+  appId: '', // Facebook专用
+  appSecret: '' // Facebook专用
 })
 
 // 表单验证错误
 const errors = reactive({
   accessToken: '',
-  expiryDate: '',
-  pageId: '',
-  accountName: ''
+  appId: '',
+  appSecret: ''
 })
 
 // 计算属性和方法
@@ -371,6 +322,10 @@ const toggleTokenVisibility = () => {
   }
 }
 
+const toggleAppSecretVisibility = () => {
+  showAppSecret.value = !showAppSecret.value
+}
+
 const validateForm = () => {
   // 清空之前的错误
   Object.keys(errors).forEach(key => {
@@ -388,29 +343,26 @@ const validateForm = () => {
     isValid = false
   }
 
-  // 验证过期时间
-  if (form.expiryDate) {
-    const expiryDate = new Date(form.expiryDate)
-    const now = new Date()
-    if (expiryDate <= now) {
-      errors.expiryDate = 'Token过期时间不能早于当前时间'
+  // 验证Facebook APP ID和APP密钥
+  if (props.platform === 'facebook') {
+    if (!form.appId.trim()) {
+      errors.appId = 'Facebook APP ID不能为空'
+      isValid = false
+    } else if (form.appId.length < 5) {
+      errors.appId = 'Facebook APP ID长度不能少于5个字符'
+      isValid = false
+    }
+
+    if (!form.appSecret.trim()) {
+      errors.appSecret = 'Facebook APP 密钥不能为空'
+      isValid = false
+    } else if (form.appSecret.length < 10) {
+      errors.appSecret = 'Facebook APP 密钥长度不能少于10个字符'
       isValid = false
     }
   }
 
-  // 验证Facebook主页ID
-  if (props.platform === 'facebook' && form.pageId) {
-    if (!/^\d+$/.test(form.pageId)) {
-      errors.pageId = 'Facebook主页ID必须是数字'
-      isValid = false
-    }
-  }
 
-  // 验证账户名称
-  if (form.accountName && form.accountName.length > 50) {
-    errors.accountName = '账户名称不能超过50个字符'
-    isValid = false
-  }
 
   return isValid
 }
@@ -422,64 +374,81 @@ const validateToken = async () => {
   validationStatus.value = null
 
   try {
-    // 导入socialMediaAPI
-    const { socialMediaAPI } = await import('@/utils/api')
+    // 添加调试日志
+    console.log('验证Token - 表单数据:', {
+      accessToken: form.accessToken,
+      appId: form.appId,
+      appSecret: form.appSecret,
+      platform: props.platform
+    })
 
-    // 根据不同平台调用不同的验证方法
-    let isValid = false
-    let details = ''
+    // 导入socialMediaAPI和request函数
+    const { socialMediaAPI, request } = await import('@/utils/api')
 
+    // 设置请求超时
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('网络错误')), 30000) // 30秒超时
+    })
+
+    // 验证结果
+    let response
+    let errorMessage = ''
+    
     if (props.platform === 'facebook') {
-      // 对于Facebook，调用后端的verifyFBToken方法进行验证
+      // 对于Facebook，使用专门的verifyFBToken方法
       try {
-        // 使用api.js中定义的verifyFBToken方法
-        const response = await socialMediaAPI.verifyFBToken({
+        const requestData = {
           token: form.accessToken,
-          pageId: form.pageId || null
-        })
+          appId: form.appId,
+          appSecret: form.appSecret
+        }
         
-        isValid = response.valid
-        details = response.details || `已成功连接到Facebook账户，Token有效且具有必要权限。`
-      } catch (error) {
-        console.warn('Token验证API调用失败:', error)
-        // 模拟验证作为后备方案
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        console.log('发送验证请求数据:', requestData)
         
-        // 检查Token格式是否符合Facebook的基本规则
-        // Facebook Token通常以EAAB开头且长度较长
-        isValid = form.accessToken.startsWith('EAA') && form.accessToken.length > 50
-        details = isValid ? 
-          '已成功连接到Facebook账户，Token有效且具有必要权限。' : 
-          'Token格式不正确。Facebook Token应该以"EAAB"开头且长度超过50个字符。请检查您复制的Token是否完整。'
+        response = await Promise.race([
+          socialMediaAPI.verifyFBToken(requestData),
+          timeoutPromise
+        ])
+      } catch (fbError) {
+        // 处理Facebook特定错误
+        console.error('Facebook Token验证错误:', fbError)
+        
+        if (fbError.message === '网络错误') {
+          throw new Error('网络错误')
+        } else if (fbError.message.includes('APP ID') || fbError.message.includes('密钥')) {
+          // 应用ID或密钥错误
+          errorMessage = fbError.message
+        } else {
+          // 其他Facebook错误
+          errorMessage = fbError.message || 'Token验证失败，请检查Token的有效性'
+        }
+        
+        // 抛出格式化后的错误
+        throw new Error(errorMessage)
       }
     } else {
-      // 对于其他平台，使用基本的格式验证作为模拟
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // 基本的Token格式验证
-      isValid = form.accessToken.length > 30
-      details = isValid ? 
-        `已成功连接到${getPlatformName(props.platform)}账户，Token有效且具有必要权限。` : 
-        `Token长度不足。${getPlatformName(props.platform)} Token通常长度超过30个字符，请确认您复制的Token是否完整。`
+      // 对于其他平台，使用通用的验证接口
+      response = await Promise.race([
+        request(`api/social/${props.platform}/verify-token`, 'POST', {
+          token: form.accessToken
+        }),
+        timeoutPromise
+      ])
     }
 
-    if (isValid) {
+    if (response.valid) {
       validationStatus.value = {
         type: 'success',
         message: 'Token验证成功！',
-        details: details
+        details: response.details || `已成功连接到${getPlatformName(props.platform)}账户，Token有效且具有必要权限。`
       }
     } else {
+      // 从响应中获取具体错误信息
+      const errorDetails = response.details || response.error || 'Token无效或权限不足'
       validationStatus.value = {
         type: 'error',
         message: 'Token验证失败',
-        details: details || `Token无效或权限不足。请确认：
-1. Token是否正确复制（没有多余的空格或字符）
-2. Token是否已过期
-3. Token是否具有必要的权限
-4. 网络连接是否正常
-
-建议重新生成Token并重试。`
+        details: errorDetails
       }
     }
 
@@ -487,12 +456,24 @@ const validateToken = async () => {
 
   } catch (error) {
     console.error('Token验证失败:', error)
-    validationStatus.value = {
-      type: 'error',
-      message: '验证过程中发生错误',
-      details: error.message || '网络连接失败，请稍后重试。'
+    
+    // 处理网络错误
+    if (error.message === '网络错误') {
+      validationStatus.value = {
+        type: 'error',
+        message: '网络错误',
+        details: '请稍后重试'
+      }
+      showNotification('网络错误，请稍后重试', 'error')
+    } else {
+      // 显示具体错误信息
+      validationStatus.value = {
+        type: 'error',
+        message: '验证失败',
+        details: error.message || '验证过程中出现错误'
+      }
+      showNotification(error.message || 'Token验证失败，请重试', 'error')
     }
-    showNotification('Token验证失败，请重试', 'error')
   } finally {
     isValidating.value = false
   }
@@ -521,34 +502,45 @@ const handleSubmit = async () => {
     const tokenData = {
       platform: props.platform,
       accessToken: form.accessToken,
-      expiryDate: form.expiryDate || null,
-      pageId: form.pageId || null,
-      accountName: form.accountName || null,
       createdAt: new Date().toISOString()
     }
 
+    // 设置请求超时
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('网络错误')), 30000) // 30秒超时
+    })
+
     // 根据不同平台调用不同的保存方法
     if (props.platform === 'facebook') {
-      // 对于Facebook，调用saveFBToken方法
-      await socialMediaAPI.saveFBToken(form.accessToken)
+      // 对于Facebook，调用saveFBToken方法，并传递APPID和APP密钥
+      await Promise.race([
+        socialMediaAPI.saveFBToken({
+          accessToken: form.accessToken,
+          appId: form.appId,
+          appSecret: form.appSecret
+        }),
+        timeoutPromise
+      ])
     } else {
-      // 对于其他平台，创建一个通用的保存请求
-      await fetch('/api/social/save-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // 对于其他平台，使用统一的saveToken方法
+      await Promise.race([
+        socialMediaAPI.saveToken({
           platform: props.platform,
-          token: form.accessToken,
-          expiryDate: form.expiryDate,
-          pageId: form.pageId,
-          accountName: form.accountName
-        })
-      })
+          token: form.accessToken
+        }),
+        timeoutPromise
+      ])
     }
 
-    showNotification(`${getPlatformName(props.platform)} Token配置成功！`, 'success')
+    // 从FB获取信息成功
+    const successMessage = `${getPlatformName(props.platform)} Token配置成功！已成功获取账户信息。`
+    validationStatus.value = {
+      type: 'success',
+      message: successMessage,
+      details: ''
+    }
+    
+    showNotification(successMessage, 'success')
     
     // 通知父组件保存成功
     emit('success', tokenData)
@@ -558,7 +550,14 @@ const handleSubmit = async () => {
 
   } catch (error) {
     console.error('保存Token失败:', error)
-    showNotification('保存失败，请重试', 'error')
+    
+    // 处理网络错误
+    if (error.message === '网络错误') {
+      showNotification('网络错误，请稍后重试', 'error')
+    } else {
+      // 显示具体错误信息
+      showNotification(error.message || '保存失败，请重试', 'error')
+    }
   } finally {
     isSaving.value = false
   }

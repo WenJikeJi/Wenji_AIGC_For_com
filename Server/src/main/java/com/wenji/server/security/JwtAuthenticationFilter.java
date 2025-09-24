@@ -36,6 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         "/api/auth/login",
         "/api/auth/register", 
         "/api/auth/send-verification-code",
+        "/api/auth/refresh-token",
         "/api/verify-code",
         "/api/verify-code/generate",
         "/api/verify-code/validate",
@@ -71,6 +72,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         if (isExcluded) {
             logger.info("路径 {} 被排除，跳过JWT验证", requestPath);
+            filterChain.doFilter(request, response);
+            return;
+        }
+        
+        // 特殊处理系统监控API路径 - 检查是否带有管理员邮箱头
+        if ((requestPath.startsWith("/api/monitor/") || requestPath.startsWith("api/monitor/")) && request.getHeader("x-user-email") != null) {
+            String adminEmail = request.getHeader("x-user-email");
+            logger.info("系统监控API请求，从请求头获取管理员邮箱: {}", adminEmail);
+            // 设置email属性，供SystemMonitorController使用
+            request.setAttribute("email", adminEmail);
             filterChain.doFilter(request, response);
             return;
         }

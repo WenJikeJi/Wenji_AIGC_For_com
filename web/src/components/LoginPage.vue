@@ -19,10 +19,9 @@
     </div>
 
     <!-- 主内容区 -->
-    <div class="flex-1 flex flex-col xl:flex-row overflow-hidden">
-      <!-- 左侧：视觉区域 - 大屏幕55%，平板和手机端上下布局 -->
-      <div class="hidden md:flex xl:w-[55%] h-full xl:h-full md:h-1/2 relative text-white overflow-hidden"
-           :class="{'md:flex xl:hidden': false, 'xl:flex': true}"
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <!-- 左侧：视觉区域 - 大屏幕35%，平板和手机端隐藏 -->
+      <div class="hidden lg:flex lg:w-[35%] h-full relative text-white overflow-hidden"
            style="background: radial-gradient(circle at 10% 20%, #1E40AF, #0F2080);">
         <!-- 增强的径向渐变背景层 -->
         <div class="absolute inset-0 bg-gradient-radial from-blue-600/20 via-blue-700/15 to-transparent"></div>
@@ -213,7 +212,7 @@
       </div>
 
       <!-- 右侧：登录区 - 响应式布局优化 -->
-      <div class="w-full xl:w-[45%] h-full xl:h-full md:h-1/2 flex items-center justify-center bg-gray-50 p-4 md:p-6 relative overflow-hidden">
+      <div class="w-full lg:w-[65%] h-full flex items-center justify-center bg-gray-50 p-4 md:p-6 relative overflow-hidden">
         <!-- 增强的右侧背景装饰 -->
         <div class="absolute -top-64 -right-64 w-[500px] h-[500px] bg-blue-100 rounded-full opacity-70 animate-float-right"></div>
         <div class="absolute -bottom-64 -left-64 w-[500px] h-[500px] bg-blue-200 rounded-full opacity-50 animate-float-right" style="animation-delay: 1s;"></div>
@@ -227,13 +226,13 @@
         <div class="absolute bottom-1/4 left-1/3 w-[60px] h-[60px] bg-teal-50 rounded-full opacity-60 animate-float-right" style="animation-delay: 2.5s;"></div>
 
         <!-- 登录卡片 - 响应式宽度优化 -->
-        <div class="w-full max-w-sm sm:max-w-md md:max-w-lg xl:max-w-xl relative z-10 animate-card-enter" style="animation-delay: 0.6s;">
+        <div class="w-full max-w-md sm:max-w-lg md:max-w-xl xl:max-w-2xl relative z-10 animate-card-enter" style="animation-delay: 0.6s;">
           <div class="bg-white rounded-xl shadow-[0_5px_15px_rgba(0,0,0,0.05),0_15px_35px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100 transform transition-all duration-300 hover:shadow-2xl">
             <!-- 顶部装饰条 - 品牌色线性渐变 -->
             <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-400"></div>
 
             <!-- 登录内容 -->
-            <div class="p-4 sm:p-6 md:p-8">
+            <div class="p-6 sm:p-8 md:p-10 xl:p-12">
               <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-5">账户登录</h2>
 
               <!-- 登录标签页 -->
@@ -275,7 +274,7 @@
                           aria-describedby="email-error"
                           aria-required="true"
                           autocomplete="off"
-                          class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] transition-all duration-300 text-gray-900 bg-gray-50 placeholder-gray-400 text-sm sm:text-base hover:bg-white hover:shadow-md transform hover:scale-[1.01]"
+                          class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-3.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] transition-all duration-300 text-gray-900 bg-gray-50 placeholder-gray-400 text-sm sm:text-base hover:bg-white hover:shadow-md transform hover:scale-[1.01]"
                           :class="emailError ? 'border-red-400 focus:ring-red-300 focus:border-red-300 animate-shake' : ''"
                           :aria-invalid="!!emailError"
                           @input="validateEmail"
@@ -303,7 +302,7 @@
                           aria-describedby="password-error"
                           aria-required="true"
                           autocomplete="off"
-                          class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] transition-all duration-300 text-gray-900 bg-white shadow-sm placeholder-gray-400 text-sm sm:text-base hover:shadow-md transform hover:scale-[1.01]"
+                          class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-3.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] transition-all duration-300 text-gray-900 bg-white shadow-sm placeholder-gray-400 text-sm sm:text-base hover:shadow-md transform hover:scale-[1.01]"
                           :class="passwordError ? 'border-red-400 focus:ring-red-300 focus:border-red-300 animate-shake' : ''"
                           :aria-invalid="!!passwordError"
                           @input="validatePassword"
@@ -333,7 +332,7 @@
                             aria-describedby="verification-code-error captcha-image"
                             aria-required="true"
                             autocomplete="off"
-                            class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] transition-all duration-300 text-gray-900 bg-white shadow-sm placeholder-gray-400 text-sm sm:text-base hover:shadow-md transform hover:scale-[1.01]"
+                            class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-3.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] transition-all duration-300 text-gray-900 bg-white shadow-sm placeholder-gray-400 text-sm sm:text-base hover:shadow-md transform hover:scale-[1.01]"
                             :class="verificationCodeError ? 'border-red-400 focus:ring-red-300 focus:border-red-300 animate-shake' : ''"
                             :aria-invalid="!!verificationCodeError"
                             @input="validateVerificationCode"
@@ -1130,21 +1129,18 @@ export default {
       
       // 检查登录状态
       checkLoginStatus() {
-        // 在实际部署环境中，通常的做法是：
-        // 1. 检查localStorage或cookie中是否有保存的登录凭证
-        // 2. 或者调用服务器API验证用户会话是否有效
-        
-        // 示例检查localStorage中的token或用户信息
-        const token = localStorage.getItem('authToken');
-        const userInfo = localStorage.getItem('userInfo');
-        
-        // 在真实项目中，这里应该有更严格的验证逻辑
-        if (token || userInfo) {
-          // 用户已登录，跳转到主页面
+        // 使用auth.js中的认证检查逻辑
+        import('../utils/auth.js').then(({ getAuthInfo }) => {
+          const authInfo = getAuthInfo();
           
-          // 跳转到首页
-          this.goToHome();
-        }
+          if (authInfo && authInfo.token) {
+            // 用户已登录且令牌有效，跳转到主页面
+            console.log('用户已登录，跳转到首页');
+            this.goToHome();
+          }
+        }).catch(error => {
+          console.error('检查登录状态失败:', error);
+        });
       },
 
     // 处理服务条款点击
@@ -1278,7 +1274,7 @@ export default {
           }
 
           // 调用后端登录API，传入验证码ID
-          const result = await authAPI.login(this.email, this.password, this.verificationCode, captchaId);
+          const result = await authAPI.login(this.email, this.password, this.verificationCode, false, captchaId);
           
           // 显示成功提示
           const notification = document.createElement('div');
@@ -1292,13 +1288,32 @@ export default {
           
           // 保存认证信息
           const userInfo = {
-            name: userData.username || userData.name || this.email.split('@')[0],
-            email: userData.email || this.email,
-            userId: userData.id || userData.userId,
-            role: userData.role || 0  // 从后端获取角色信息，如果没有则默认为用户角色
+            user: {
+              name: userData.username || userData.name || this.email.split('@')[0],
+              email: userData.email || this.email,
+              userId: userData.id || userData.userId,
+              role: userData.role || 0  // 从后端获取角色信息，如果没有则默认为用户角色
+            },
+            token: token,
+            refreshToken: result.refreshToken
           };
           
-          saveAuthInfo(userInfo, token);
+          // 使用auth.js中的saveAuthInfo函数保存认证信息
+          import('../utils/auth.js').then(({ saveAuthInfo }) => {
+            saveAuthInfo(userInfo);
+          }).catch(error => {
+            console.error('保存认证信息失败:', error);
+            // 降级处理：直接保存到localStorage
+            const authData = {
+              user: userInfo.user,
+              token: token,
+              loginTime: Date.now()
+            };
+            localStorage.setItem('user_auth', JSON.stringify(authData));
+            if (result.refreshToken) {
+              localStorage.setItem('refresh_token', result.refreshToken);
+            }
+          });
           
           // 跳转至原来的页面或首页
           setTimeout(() => {
@@ -1324,27 +1339,46 @@ export default {
             }
           }, 2000);
         } catch (error) {
-          // 显示错误提示
-          showError(error.message || '登录失败，请重试', '登录失败');
+          // 清除之前的错误信息
+          this.emailError = '';
+          this.passwordError = '';
+          this.verificationCodeError = '';
           
-          // 根据错误类型设置具体的错误信息
-          if (error.message && (error.message.includes('验证码') || error.message.includes('Incorrect captcha'))) {
-            // 如果是验证码错误，提供友好的中文提示
-            this.verificationCodeError = error.message.includes('Incorrect captcha') ? '验证码不正确，请重新输入' : error.message;
-            // 刷新验证码，让用户可以立即重新输入，同时保留错误提示
+          // 获取错误信息
+          const errorMessage = error.message || '登录失败，请重试';
+          
+          // 根据后端返回的具体错误信息进行分类处理
+          if (errorMessage.includes('验证码错误') || errorMessage.includes('验证码不正确') || errorMessage.includes('验证码已过期') || errorMessage.includes('Incorrect captcha')) {
+            // 验证码相关错误
+            this.verificationCodeError = errorMessage.includes('Incorrect captcha') ? '验证码不正确，请重新输入' : errorMessage;
+            // 刷新验证码，让用户可以立即重新输入
             this.refreshCaptcha(true);
-          } else if (error.message && error.message.includes('Email does not exist')) {
-            // 邮箱不存在错误，显示在邮箱输入框下方
+            showError('验证码错误，请重新输入', '登录失败');
+          } else if (errorMessage === '邮箱不存在') {
+            // 邮箱不存在错误
             this.emailError = '邮箱不存在';
-          } else if (error.message && error.message.includes('Password is incorrect')) {
-            // 密码错误，显示在密码输入框下方
+            showError('邮箱不存在，请检查邮箱地址或先注册账号', '登录失败');
+          } else if (errorMessage === '密码错误') {
+            // 密码错误
             this.passwordError = '密码错误';
-          } else if (error.message && ((error.message.includes('邮箱') || error.message.includes('账号') || error.message.includes('Email')) && !error.message.includes('密码') && !error.message.includes('password'))) {
-            // 只包含邮箱相关词汇的错误，显示在邮箱输入框下方
-            this.emailError = error.message.includes('Invalid email') ? '邮箱格式不正确或不存在' : error.message;
-          } else if (error.message && ((error.message.includes('密码') || error.message.includes('password') || error.message.includes('Password')) || error.message.includes('邮箱或密码') || error.message.includes('Invalid email or password'))) {
-            // 包含密码相关词汇或同时包含邮箱和密码的错误，显示在密码输入框下方
-            this.passwordError = error.message.includes('password') || error.message.includes('Password') || error.message.includes('Invalid email or password') ? '邮箱或密码错误' : error.message;
+            showError('密码错误，请检查密码是否正确', '登录失败');
+          } else if (errorMessage === '账号已被禁用') {
+            // 账号被禁用
+            showError('您的账号已被禁用，请联系管理员', '登录失败');
+          } else if (errorMessage === '角色不匹配') {
+            // 角色不匹配
+            showError('账号角色不匹配，请使用正确的登录方式', '登录失败');
+          } else if (errorMessage.includes('账号不能为空')) {
+            // 账号为空
+            this.emailError = '请输入邮箱地址';
+            showError('请输入邮箱地址', '登录失败');
+          } else if (errorMessage.includes('密码不能为空')) {
+            // 密码为空
+            this.passwordError = '请输入密码';
+            showError('请输入密码', '登录失败');
+          } else {
+            // 其他未分类的错误，显示通用错误信息
+            showError(errorMessage, '登录失败');
           }
           
           // 恢复按钮状态

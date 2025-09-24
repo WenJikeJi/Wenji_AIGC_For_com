@@ -32,6 +32,10 @@
           
           <div class="hidden md:flex items-center space-x-4">
             <a href="#" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors">联系我们</a>
+            <!-- 系统监控链接 - 仅限ken@shamillaa.com -->
+            <a v-if="currentUser && currentUser.email === 'ken@shamillaa.com'" href="#/system-monitor" class="text-gray-700 hover:text-purple-600 text-sm font-medium transition-colors">
+              <i class="fas fa-chart-line mr-1 text-xs"></i>系统监控
+            </a>
             <!-- 登录状态显示 -->
             <div v-if="isLoggedIn" class="flex items-center space-x-2">
               <span class="text-sm font-medium text-gray-700">欢迎，{{ currentUser?.name || '用户' }}</span>
@@ -81,15 +85,15 @@
             <!-- 核心数据展示 -->
             <div class="grid grid-cols-3 gap-4 mb-8">
               <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">50+</div>
+                <div class="text-2xl font-bold text-blue-600">{{ stats.platforms }}+</div>
                 <div class="text-sm text-gray-500">海外平台</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">1000+</div>
+                <div class="text-2xl font-bold text-purple-600">{{ stats.users }}+</div>
                 <div class="text-sm text-gray-500">企业用户</div>
               </div>
               <div class="text-center">
-                <div class="text-2xl font-bold text-indigo-600">95%</div>
+                <div class="text-2xl font-bold text-indigo-600">{{ stats.efficiency }}%</div>
                 <div class="text-sm text-gray-500">效率提升</div>
               </div>
             </div>
@@ -1129,6 +1133,7 @@
 
 <script>
 import { isLoggedIn, getCurrentUser, logout as logoutUser } from '../utils/auth.js';
+import { socialMediaAPI } from '../utils/api';
 
 export default {
   name: 'IndexPage',
@@ -1137,7 +1142,21 @@ export default {
       // 页面数据
       isLoggedIn: false,
       currentUser: null,
-      billingType: 'monthly' // monthly or yearly
+      billingType: 'monthly', // monthly or yearly
+      // 社媒平台状态
+      platformStatus: {},
+      // 真实帖子数据
+      latestPosts: [],
+      // 统计数据
+      stats: {
+        platforms: 50, // 默认值
+        users: 1000,   // 默认值
+        efficiency: 95 // 默认值
+      },
+      // 是否正在加载数据
+      loading: true,
+      // 加载错误
+      error: null
     }
   },
   mounted() {
@@ -1150,6 +1169,9 @@ export default {
     this.checkLoginStatus();
     // 监听登录状态变化
     this.setupStatusChecker();
+    
+    // 获取首页数据
+    this.loadHomepageData();
     
     // 确保页面内容居中显示
     this.$nextTick(() => {
@@ -1188,8 +1210,8 @@ export default {
     },
     // 登出功能
     logout() {
-        logoutUser();
-      },
+      logoutUser();
+    },
     
     // 跳转到登录页面
     goToLogin() {
@@ -1211,6 +1233,113 @@ export default {
         window.location.hash = '#/data';
       } else {
         window.location.hash = '#/login';
+      }
+    },
+    
+    /**
+     * 加载首页数据
+     */
+    async loadHomepageData() {
+      try {
+        this.loading = true;
+        this.error = null;
+        
+        // 并行获取所有首页数据
+        const [status, posts, realPosts, homepages] = await Promise.all([
+          this.fetchPlatformStatus(),
+          this.fetchPosts(),
+          this.fetchRealPosts(),
+          this.fetchHomepages()
+        ]);
+        
+        // 设置平台状态
+        this.platformStatus = status || {};
+        
+        // 合并帖子数据
+        this.latestPosts = [...posts, ...realPosts].slice(0, 10);
+        
+        // 计算统计数据
+        this.calculateStats();
+        
+      } catch (err) {
+        console.error('加载首页数据失败:', err);
+        this.error = '加载数据失败，但显示模拟数据';
+        // 即使API调用失败，也要保留默认的模拟数据
+        // 不需要重置stats对象，因为data中已经初始化了默认值
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    /**
+     * 获取平台连接状态
+     */
+    async fetchPlatformStatus() {
+      try {
+        const response = await socialMediaAPI.getPlatformStatus();
+        return response || {};
+      } catch (error) {
+        console.warn('获取平台状态失败:', error);
+        return {};
+      }
+    },
+    
+    /**
+     * 获取帖子列表
+     */
+    async fetchPosts() {
+      try {
+        const response = await socialMediaAPI.getPosts({ page: 1, pageSize: 5 });
+        return response?.data || [];
+      } catch (error) {
+        console.warn('获取帖子列表失败:', error);
+        return [];
+      }
+    },
+    
+    /**
+     * 获取真实帖子数据
+     */
+    async fetchRealPosts() {
+      try {
+        const [facebookPosts, instagramPosts] = await Promise.all([
+          socialMediaAPI.getFacebookRealPosts(),
+          socialMediaAPI.getInstagramRealPosts()
+        ]);
+        
+        const fbData = facebookPosts?.data || [];
+        const igData = instagramPosts?.data || [];
+        
+        return [...fbData, ...igData].slice(0, 5);
+      } catch (error) {
+        console.warn('获取真实帖子数据失败:', error);
+        return [];
+      }
+    },
+    
+    /**
+     * 获取社媒主页列表
+     */
+    async fetchHomepages() {
+      try {
+        const response = await socialMediaAPI.getHomepages();
+        return response?.data || [];
+      } catch (error) {
+        console.warn('获取主页列表失败:', error);
+        return [];
+      }
+    },
+    
+    /**
+     * 计算统计数据
+     */
+    calculateStats() {
+      // 从平台状态计算连接的平台数量
+      const connectedPlatforms = Object.values(this.platformStatus).filter(status => status).length;
+      
+      // 如果有实际连接的平台，使用实际数量，否则保持默认值
+      if (connectedPlatforms > 0) {
+        this.stats.platforms = connectedPlatforms;
       }
     }
   }

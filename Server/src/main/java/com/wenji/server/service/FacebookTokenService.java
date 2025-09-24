@@ -10,6 +10,8 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class FacebookTokenService {
@@ -22,7 +24,9 @@ public class FacebookTokenService {
         }
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            String url = "https://graph.facebook.com/me?access_token=" + accessToken + "&fields=id,name,email";
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            String url = "https://graph.facebook.com/me?access_token=" + encodedAccessToken + "&fields=id,name,email";
             HttpGet request = new HttpGet(url);
 
             ClassicHttpResponse response = httpClient.execute(request);

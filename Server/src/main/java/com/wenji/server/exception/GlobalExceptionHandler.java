@@ -2,6 +2,7 @@ package com.wenji.server.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -52,6 +53,23 @@ public class GlobalExceptionHandler {
         errorResponse.put("error", "参数验证失败");
         errorResponse.put("details", errors);
         
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+    
+    // 处理请求体解析异常
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, WebRequest request) {
+        System.err.println("===== 请求体解析异常 =====");
+        System.err.println("请求URL: " + request.getDescription(false));
+        ex.printStackTrace();
+        System.err.println("========================");
+        
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("code", 400);
+        errorResponse.put("message", "访问令牌不能为空");
+        errorResponse.put("error", "请求体解析失败");
+        errorResponse.put("details", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     

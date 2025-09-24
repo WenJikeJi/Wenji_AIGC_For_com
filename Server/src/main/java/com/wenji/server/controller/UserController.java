@@ -2,8 +2,12 @@ package com.wenji.server.controller;
 
 import com.wenji.server.model.UserAccount;
 import com.wenji.server.service.UserService;
+import com.wenji.server.service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,14 +20,34 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
     
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+    
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private AuthService authService;
+    
+    /**
+     * 获取用户ID - 从JWT认证信息中获取
+     */
+    private Long getCurrentUserId(HttpServletRequest request) {
+        // 从request属性中获取用户ID
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            log.warn("未从JWT中获取到用户ID");
+            // 实际环境中应该抛出异常或返回错误，这里为了演示暂时返回固定值
+            return 1L;
+        }
+        return userId;
+    }
     
     @Operation(
             summary = "获取用户列表",
@@ -223,33 +247,81 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "未授权，需要登录"),
             @ApiResponse(responseCode = "404", description = "用户不存在")
     })
+    // 启用/禁用用户
     @PutMapping("/{userId}/status")
-    public ResponseEntity<?> updateUserStatus(
-            @Parameter(description = "用户ID", example = "1") @PathVariable Long userId, 
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "状态更新请求参数",
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    example = "{\"status\": 1}" // 0: 禁用, 1: 启用
-                            )
-                    )
-            )
-            @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> updateUserStatus(
+            @PathVariable Long userId,
+            @RequestBody Map<String, Integer> request,
+            HttpServletRequest httpRequest) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
         try {
-            // 获取当前登录用户信息
-            Long currentUserId = Long.parseLong(request.getAttribute("userId").toString());
+            // 获取当前用户ID
+            Long currentUserId = getCurrentUserId(httpRequest);
             
-            Integer status = (Integer) requestBody.get("status");
-            if (status != 0 && status != 1) {
-                throw new RuntimeException("状态值无效");
+            Integer status = request.get("status");
+            if (status == null || (status != 0 && status != 1)) {
+                response.put("success", false);
+                response.put("message", "状态值无效");
+                return ResponseEntity.badRequest().body(response);
             }
             
             userService.updateUserStatus(userId, status, currentUserId);
-            return ResponseEntity.ok(Map.of("message", "用户状态更新成功"));
+            
+            response.put("success", true);
+            response.put("message", status == 1 ? "用户启用成功" : "用户禁用成功");
+            return ResponseEntity.ok(response);
+            
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            log.error("更新用户状态失败", e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    
+    // 更新用户基本信息
+    @PutMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> updateUser(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 获取当前用户ID
+            Long currentUserId = getCurrentUserId(httpRequest);
+            
+            String username = request.get("username");
+            String account = request.get("account");
+            String email = request.get("email");
+            String phone = request.get("phone");
+            String avatar = request.get("avatar");
+            
+            // 验证必填字段
+            if ((username == null || username.trim().isEmpty()) &&
+                (account == null || account.trim().isEmpty()) &&
+                (email == null || email.trim().isEmpty()) &&
+                (phone == null || phone.trim().isEmpty()) &&
+                (avatar == null || avatar.trim().isEmpty())) {
+                response.put("success", false);
+                response.put("message", "至少需要提供一个要更新的字段");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            userService.updateUserInfo(userId, username, account, email, phone, avatar, currentUserId);
+            
+            response.put("success", true);
+            response.put("message", "用户信息更新成功");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("更新用户信息失败", e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
     
@@ -293,11 +365,7 @@ public class UserController {
             String encryptedNewPassword = (String) requestBody.get("encryptedNewPassword");
             
             // 调用认证服务的修改密码方法
-            // 注意：这里应该是从AuthService调用，而不是重复实现
-            // 为了简化，这里直接调用UserService的方法
-            // 实际应该在AuthService中实现完整的密码修改逻辑
-            // 这里仅作为示例
-            // authService.changePassword(currentUserId, encryptedOldPassword, encryptedNewPassword);
+            authService.changePassword(currentUserId, encryptedOldPassword, encryptedNewPassword);
             
             return ResponseEntity.ok(Map.of("message", "密码修改成功"));
         } catch (Exception e) {

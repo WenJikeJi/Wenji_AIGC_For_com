@@ -41,6 +41,12 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
                            @Param("lastLoginIp") String lastLoginIp, 
                            @Param("lastLoginAddress") String lastLoginAddress);
     
+    // 根据手机号查询用户
+    Optional<UserAccount> findByPhone(String phone);
+    
+    // 根据头像查询用户
+    Optional<UserAccount> findByAvatar(String avatar);
+    
     // 更新用户状态
     @Modifying
     @Transactional
@@ -83,4 +89,7 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     
     // 根据角色和parentId为null查询用户（用于初始化主账号的parentId）
     List<UserAccount> findByRoleAndParentIdIsNull(Integer role);
+    
+    // 统计指定时间范围内的注册用户数量
+    long countByCreatedTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
 }

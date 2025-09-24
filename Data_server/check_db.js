@@ -3,12 +3,14 @@ const mysql = require('mysql2/promise');
 async function checkDatabase() {
     try {
         // 连接到MySQL
-        const connection = await mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: 'Wenguang-1122',
-            database: 'wenji_db'
-        });
+        const dbConfig = {
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USERNAME || 'root',
+            password: process.env.DB_PASSWORD || 'Wenguang-1122',
+            database: process.env.DB_NAME || 'wenji_db'
+        };
+        
+        const connection = await mysql.createConnection(dbConfig);
 
         console.log('连接到wenji_db成功');
 

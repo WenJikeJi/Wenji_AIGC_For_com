@@ -15,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -234,9 +236,10 @@ public class FacebookApiService {
      * 验证访问令牌
      */
     public boolean validateAccessToken(String accessToken) {
-        String url = facebookApiBaseUrl + "/me?access_token=" + accessToken;
-        
         try {
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            String url = facebookApiBaseUrl + "/me?access_token=" + encodedAccessToken;
+            
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             return response.getStatusCode() == HttpStatus.OK;
         } catch (Exception e) {
@@ -250,8 +253,11 @@ public class FacebookApiService {
      */
     public List<Map<String, Object>> getUserPages(String accessToken) {
         try {
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            
             // 首先获取用户信息
-            String userUrl = facebookApiBaseUrl + "/me/accounts?fields=id,name,access_token&access_token=" + accessToken;
+            String userUrl = facebookApiBaseUrl + "/me/accounts?fields=id,name,access_token&access_token=" + encodedAccessToken;
             
             ResponseEntity<String> response = restTemplate.getForEntity(userUrl, String.class);
             
@@ -284,11 +290,14 @@ public class FacebookApiService {
     }
     
     /**
-     * 获取帖子的评论列表
+     * 获取Facebook帖子的评论列表
      */
     public List<Map<String, Object>> getPostComments(String postId, String accessToken) {
         try {
-            String url = facebookApiBaseUrl + "/" + postId + "/comments?fields=id,message,from,created_time,like_count,parent&access_token=" + accessToken;
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            
+            String url = facebookApiBaseUrl + "/" + postId + "/comments?fields=id,message,from,created_time,like_count,parent&access_token=" + encodedAccessToken;
             
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             
@@ -348,11 +357,14 @@ public class FacebookApiService {
     }
     
     /**
-     * 删除评论
+     * 删除Facebook评论
      */
     public boolean deleteComment(String commentId, String accessToken) {
         try {
-            String url = facebookApiBaseUrl + "/" + commentId + "?access_token=" + accessToken;
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            
+            String url = facebookApiBaseUrl + "/" + commentId + "?access_token=" + encodedAccessToken;
             
             restTemplate.delete(url);
             
@@ -369,11 +381,14 @@ public class FacebookApiService {
      */
     public List<Map<String, Object>> getPosts(String pageId, String accessToken) {
         try {
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            
             // 通过URI对象直接构造完整URL，完全绕过Spring的模板解析机制
             // 这种方式确保Facebook API的嵌套语法不会被Spring解析为模板变量
             String baseUrl = facebookApiBaseUrl + "/" + pageId + "/posts";
             String fieldsParam = "fields=id,message,created_time,attachments{media{image{url}}}";
-            String accessTokenParam = "access_token=" + accessToken;
+            String accessTokenParam = "access_token=" + encodedAccessToken;
             String fullUrl = baseUrl + "?" + fieldsParam + "&" + accessTokenParam;
             
             // 创建URI对象，避免Spring对URL进行解析
@@ -456,11 +471,14 @@ public class FacebookApiService {
      */
     public Map<String, Object> getPostDetails(String postId, String accessToken) {
         try {
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            
             // 通过URI对象直接构造完整URL，完全绕过Spring的模板解析机制
             // 这种方式确保Facebook API的嵌套语法不会被Spring解析为模板变量
             String baseUrl = facebookApiBaseUrl + "/" + postId;
             String fieldsParam = "fields=id,message,created_time,attachments{media{image{url}}}";
-            String accessTokenParam = "access_token=" + accessToken;
+            String accessTokenParam = "access_token=" + encodedAccessToken;
             String fullUrl = baseUrl + "?" + fieldsParam + "&" + accessTokenParam;
             
             // 创建URI对象，避免Spring对URL进行解析
@@ -567,11 +585,14 @@ public class FacebookApiService {
      */
     public Map<String, Object> getCommentDetails(String commentId, String accessToken) {
         try {
+            // 对access_token进行URL编码，避免特殊字符导致的URISyntaxException
+            String encodedAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+            
             // 通过URI对象直接构造完整URL，完全绕过Spring的模板解析机制
             // 这种方式确保Facebook API的嵌套语法不会被Spring解析为模板变量
             String baseUrl = facebookApiBaseUrl + "/" + commentId;
             String fieldsParam = "fields=id,message,created_time,from{name,id,picture{url}}";
-            String accessTokenParam = "access_token=" + accessToken;
+            String accessTokenParam = "access_token=" + encodedAccessToken;
             String fullUrl = baseUrl + "?" + fieldsParam + "&" + accessTokenParam;
             
             // 创建URI对象，避免Spring对URL进行解析

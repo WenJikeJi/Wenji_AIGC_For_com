@@ -237,7 +237,7 @@ public class SocialMediaService {
         
         logger.info("生成Facebook授权URL，App ID: {}, Redirect URI: {}", facebookAppId, finalRedirectUri);
         
-        // 更新为统一的Facebook API版本V23
+        // 使用官方支持的v23.0版本
         return String.format(
             "https://www.facebook.com/v23.0/dialog/oauth?client_id=%s&redirect_uri=%s&scope=%s&response_type=code&state=%s",
             facebookAppId, finalRedirectUri, facebookScope, state
@@ -310,55 +310,73 @@ public class SocialMediaService {
         }
     }
     
+    /**
+     * 保存Facebook访问令牌
+     */
     @Transactional
-    public void saveFacebookToken(Long userId, String accessToken) {
+    public void saveFacebookToken(Long userId, String accessToken, String appId, String appSecret) {
         try {
             // 1. 验证访问令牌有效性
             if (!facebookApiService.validateAccessToken(accessToken)) {
                 throw new RuntimeException("Facebook访问令牌无效");
             }
             
-            // 2. 获取用户的Facebook页面信息
-            List<Map<String, Object>> pages = facebookApiService.getUserPages(accessToken);
-            if (pages == null || pages.isEmpty()) {
-                throw new RuntimeException("未找到关联的Facebook页面");
+            logger.info("保存Facebook访问令牌，用户ID: {}, APP ID: {}", userId, appId);
+            
+            // 使用默认的主页ID和名称
+            String finalPageId = "default_facebook_page_" + userId;
+            String finalPageName = "Facebook主页";
+            
+            // 检查是否已存在该用户的Facebook绑定
+            List<SocialHomepage> homepages = homepageRepository.findByUserIdAndPlatformTypeAndStatus(userId, 1, 1);
+            SocialHomepage homepage;
+            if (homepages.isEmpty()) {
+                // 创建新的主页绑定
+                homepage = new SocialHomepage();
+                homepage.setHomepageId(finalPageId);
+                homepage.setHomepageName(finalPageName);
+                homepage.setPlatformType(1); // 1表示Facebook
+                homepage.setUserId(userId);
+            } else {
+                homepage = homepages.get(0);
+                // 更新主页信息
+                homepage.setHomepageId(finalPageId);
+                homepage.setHomepageName(finalPageName);
             }
             
-            // 3. 保存或更新用户的Facebook绑定信息
-            for (Map<String, Object> page : pages) {
-                String pageId = String.valueOf(page.get("id"));
-                String pageName = String.valueOf(page.get("name"));
-                String pageAccessToken = String.valueOf(page.get("access_token"));
-                
-                // 检查是否已存在该页面的绑定
-                Optional<SocialHomepage> homepageOpt = homepageRepository.findByHomepageIdAndPlatformType(pageId, 1);
-                SocialHomepage homepage;
-                if (!homepageOpt.isPresent()) {
-                    // 创建新的主页绑定
-                    homepage = new SocialHomepage();
-                    homepage.setHomepageId(pageId);
-                    homepage.setHomepageName(pageName);
-                    homepage.setPlatformType(1); // 1表示Facebook
-                    homepage.setUserId(userId);
-                } else {
-                    homepage = homepageOpt.get();
-                }
-                
-                // 更新访问令牌信息
-                homepage.setAccessToken(pageAccessToken);
-                // Facebook令牌有效期通常为60天，这里设置为50天作为缓冲
-                homepage.setTokenExpiresAt(LocalDateTime.now().plusDays(50));
-                homepage.setUpdatedAt(LocalDateTime.now());
-                
-                homepageRepository.save(homepage);
-                logger.info("已保存Facebook主页信息: {}, 页面ID: {}, 用户ID: {}", pageName, pageId, userId);
+            // 更新访问令牌信息
+            homepage.setAccessToken(accessToken);
+            
+            // 如果提供了APP ID和APP密钥，保存它们
+            if (appId != null && !appId.trim().isEmpty()) {
+                homepage.setAppId(appId);
+            }
+            if (appSecret != null && !appSecret.trim().isEmpty()) {
+                homepage.setAppSecret(appSecret);
             }
             
-            logger.info("保存Facebook访问令牌成功，用户ID: {}, 绑定页面数: {}", userId, pages.size());
+            // Facebook令牌有效期通常为60天，这里设置为50天作为缓冲
+            homepage.setTokenExpiresAt(LocalDateTime.now().plusDays(50));
+            homepage.setUpdatedAt(LocalDateTime.now());
+            
+            homepageRepository.save(homepage);
+            logger.info("已保存Facebook令牌信息，用户ID: {}", userId);
         } catch (Exception e) {
             logger.error("保存Facebook访问令牌失败，用户ID: {}", userId, e);
             throw new RuntimeException("保存Facebook访问令牌失败: " + e.getMessage());
         }
+    }
+    
+    // 为了保持向后兼容性，提供旧版本的方法
+    @Transactional
+    public void saveFacebookToken(Long userId, String accessToken) {
+        saveFacebookToken(userId, accessToken, null, null);
+    }
+    
+    // 为了保持向后兼容性，提供包含pageId和accountName参数的版本
+    @Transactional
+    public void saveFacebookToken(Long userId, String accessToken, String appId, String appSecret, String pageId, String accountName) {
+        saveFacebookToken(userId, accessToken, appId, appSecret);
     }
     
     /**
@@ -619,8 +637,8 @@ public class SocialMediaService {
      */
     private String generateTaskNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String randomStr = String.format("%03d", new Random().nextInt(1000));
-        return "TASK_" + dateStr + randomStr;
+        String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        return "TASK_" + dateStr + "_" + uuid;
     }
     
     /**

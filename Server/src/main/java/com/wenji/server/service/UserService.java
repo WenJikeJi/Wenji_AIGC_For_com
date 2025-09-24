@@ -707,6 +707,92 @@ public class UserService {
         userOperationLogRepository.save(log);
     }
     
+    // 更新用户基本信息
+    @Transactional
+    public void updateUserInfo(Long userId, String username, String account, String email, String phone, String avatar, Long operatorId) {
+        // 1. 验证操作人是否有权限
+        UserAccount operator = userAccountRepository.findById(operatorId)
+                .orElseThrow(() -> new RuntimeException("操作人不存在"));
+        
+        // 2. 验证被操作人是否存在
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        
+        // 3. 检查权限：
+        // - 主账号可以管理自己及子账号
+        // - 子账号只能被主账号管理
+        if (operator.getRole() == 0) {
+            // 主账号：可以管理任何用户
+            // 允许主账号更新自己和子账号的信息
+        } else {
+            // 子账号：无权限管理用户
+            throw new RuntimeException("无权限执行此操作");
+        }
+        
+        // 4. 验证邮箱格式
+        if (email != null && !email.isEmpty()) {
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+            if (!Pattern.matches(emailRegex, email)) {
+                throw new RuntimeException("邮箱格式不正确");
+            }
+            
+            // 检查邮箱是否已被其他用户使用
+            Optional<UserAccount> existingUser = userAccountRepository.findByEmail(email);
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new RuntimeException("该邮箱已被其他用户使用");
+            }
+        }
+        
+        // 5. 检查账号是否已被其他用户使用
+        if (account != null && !account.isEmpty()) {
+            Optional<UserAccount> existingUser = userAccountRepository.findByAccount(account);
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new RuntimeException("该账号已被其他用户使用");
+            }
+        }
+        
+        // 6. 验证手机号格式
+        if (phone != null && !phone.isEmpty()) {
+            String phoneRegex = "^1[3-9]\\d{9}$";
+            if (!Pattern.matches(phoneRegex, phone)) {
+                throw new RuntimeException("手机号格式不正确");
+            }
+            
+            // 检查手机号是否已被其他用户使用
+            Optional<UserAccount> existingUser = userAccountRepository.findByPhone(phone);
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new RuntimeException("该手机号已被其他用户使用");
+            }
+        }
+        
+        // 7. 更新用户信息
+        if (username != null && !username.isEmpty()) {
+            user.setUsername(username);
+        }
+        if (account != null && !account.isEmpty()) {
+            user.setAccount(account);
+        }
+        if (email != null && !email.isEmpty()) {
+            user.setEmail(email);
+        }
+        if (phone != null && !phone.isEmpty()) {
+            user.setPhone(phone);
+        }
+        if (avatar != null && !avatar.isEmpty()) {
+            user.setAvatar(avatar);
+        }
+        
+        userAccountRepository.save(user);
+        
+        // 8. 记录操作日志
+        UserOperationLog log = new UserOperationLog();
+        log.setUserId(operatorId);
+        log.setOperation("更新用户信息");
+        log.setDetails("更新用户信息成功，用户ID: " + userId);
+        log.setEncryptionStatus(1); // 加密传输
+        userOperationLogRepository.save(log);
+    }
+    
     // 生成随机密码（包含数字、字母和特殊字符）
     private String generateRandomPassword() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";

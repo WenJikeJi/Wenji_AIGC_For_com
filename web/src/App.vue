@@ -12,6 +12,10 @@
   <div v-else-if="currentPage === 'users' && isLoggedIn && isSuperUser">
     <UserManagement />
   </div>
+  <div v-else-if="currentPage === 'system-monitor'">
+    <!-- 系统监控页面，不要求登录，可以直接访问 -->
+    <SystemMonitor />
+  </div>
   <div v-else-if="currentPage === 'terms'">
     <TermsOfService />
   </div>
@@ -36,6 +40,7 @@ import IndexPage from './components/index.vue';
 import DataPage from './components/data.vue';
 import SocialMediaManagement from './components/SocialMediaManagement.vue';
 import UserManagement from './components/UserManagement.vue';
+import SystemMonitor from './components/SystemMonitor.vue';
 import TermsOfService from './components/TermsOfService.vue';
 import PrivacyPolicy from './components/PrivacyPolicy.vue';
 import ContactUs from './components/ContactUs.vue';
@@ -51,6 +56,7 @@ export default {
     DataPage,
     SocialMediaManagement,
     UserManagement,
+    SystemMonitor,
     TermsOfService,
     PrivacyPolicy,
     ContactUs,
@@ -68,6 +74,8 @@ export default {
       initialPage = 'social-media';
     } else if (hash === '#/users') {
       initialPage = 'users';
+    } else if (hash === '#/system-monitor') {
+      initialPage = 'system-monitor';
     } else if (hash === '#/terms') {
       initialPage = 'terms';
     } else if (hash === '#/privacy') {
@@ -80,7 +88,8 @@ export default {
       currentPage: initialPage,
       isLoggedIn: false,
       currentUser: null,
-      isSuperUser: false
+      isSuperUser: false,
+      isSystemAdmin: false
     };
   },
   mounted() {
@@ -88,6 +97,7 @@ export default {
     this.isLoggedIn = initSessionManager();
     this.currentUser = getCurrentUser();
     this.isSuperUser = this.currentUser && this.currentUser.role === 0;
+    this.isSystemAdmin = this.currentUser && this.currentUser.email === 'ken@shamillaa.com';
     
     // 监听URL变化，实现简单的页面切换
     this.updateCurrentPageFromUrl();
@@ -142,6 +152,17 @@ export default {
             // 未登录时跳转到登录页
             window.location.hash = '#/login';
           }
+        } else if (hash === '#/system-monitor') {
+          if (this.isLoggedIn && this.isSystemAdmin) {
+            this.currentPage = 'system-monitor';
+          } else if (this.isLoggedIn && !this.isSystemAdmin) {
+            // 非系统管理员时跳转到首页
+            showError('权限不足，仅限特定管理员访问', '无权限');
+            window.location.hash = '#/';
+          } else {
+            // 未登录时跳转到登录页
+            window.location.hash = '#/login';
+          }
         } else if (hash === '#/terms') {
           this.currentPage = 'terms';
         } else if (hash === '#/privacy') {
@@ -156,19 +177,28 @@ export default {
       // 模拟登录状态变化的监听
       const checkStatus = () => {
         const loggedIn = checkLoggedIn();
-        if (loggedIn !== this.isLoggedIn) {
+        if (loggedIn !== this.isLoggedIn || true) { // 每次都更新状态以确保准确性
           this.isLoggedIn = loggedIn;
           this.currentUser = getCurrentUser();
           this.isSuperUser = this.currentUser && this.currentUser.role === 0;
+          // 优化系统管理员检查，确保能正确识别邮箱
+          this.isSystemAdmin = this.currentUser && this.currentUser.email && 
+                              this.currentUser.email.toLowerCase() === 'ken@shamillaa.com';
+          
           // 如果之前因为未登录被拦截，可以现在检查并重定向
           if (loggedIn && this.currentPage === 'login') {
             window.location.hash = '#/';
           }
+          // 当用户是系统管理员且尝试访问系统监控页面时，确保能正确显示
+          if (this.isSystemAdmin && window.location.hash === '#/system-monitor') {
+            this.currentPage = 'system-monitor';
+          }
         }
       };
       
-      // 定时检查登录状态
-      setInterval(checkStatus, 1000);
+      // 增加检查频率并立即执行一次检查
+      checkStatus();
+      setInterval(checkStatus, 500);
     }
   },
   beforeUnmount() {

@@ -5,8 +5,8 @@ require('dotenv').config();
 
 // MySQL连接配置
 const dbConfig = {
-  host: 'localhost',
-  user: 'root',
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USERNAME || 'root',
   password: process.env.DB_PASSWORD || 'root',
   multipleStatements: true
 };

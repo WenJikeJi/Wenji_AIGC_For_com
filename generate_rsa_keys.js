@@ -3,10 +3,10 @@ const mysql = require('mysql2/promise');
 
 // 数据库配置
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'Wenguang-1122',
-    database: 'wenji_db'
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USERNAME || 'root',
+    password: process.env.DB_PASSWORD || 'Wenguang-1122',
+    database: process.env.DB_NAME || 'wenji_db'
 };
 
 // 生成RSA密钥对

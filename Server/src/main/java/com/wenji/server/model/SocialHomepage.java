@@ -26,6 +26,12 @@ public class SocialHomepage {
     @Column(name = "refresh_token", columnDefinition = "TEXT")
     private String refreshToken;
     
+    @Column(name = "app_id", length = 100)
+    private String appId;
+    
+    @Column(name = "app_secret", columnDefinition = "TEXT")
+    private String appSecret;
+    
     @Column(name = "token_expires_at")
     private LocalDateTime tokenExpiresAt;
     
@@ -94,6 +100,22 @@ public class SocialHomepage {
     
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+    
+    public String getAppId() {
+        return appId;
+    }
+    
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+    
+    public String getAppSecret() {
+        return appSecret;
+    }
+    
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
     }
     
     public LocalDateTime getTokenExpiresAt() {

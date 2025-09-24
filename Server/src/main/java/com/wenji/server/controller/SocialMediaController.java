@@ -1,14 +1,15 @@
 package com.wenji.server.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wenji.server.dto.SocialPostRequest;
 import com.wenji.server.dto.SocialPostResponse;
+import com.wenji.server.dto.TaskRequest;
+import com.wenji.server.dto.TaskResponse;
 import com.wenji.server.model.SocialHomepage;
 import com.wenji.server.model.SocialPost;
 import com.wenji.server.model.SocialPostTask;
-import com.wenji.server.model.SocialComment;
-import com.wenji.server.service.SocialMediaService;
 import com.wenji.server.service.FacebookTokenService;
-import com.wenji.server.service.FacebookTokenService.FacebookTokenValidationResult;
+import com.wenji.server.service.SocialMediaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,145 +24,144 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/social")
-@Validated
-@Tag(name = "社媒管理", description = "Facebook和Instagram发帖管理接口")
+@Tag(name = "社交媒体管理", description = "社交媒体管理相关接口")
 public class SocialMediaController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(SocialMediaController.class);
-    
+
     @Autowired
     private SocialMediaService socialMediaService;
-    
+
     @Autowired
     private FacebookTokenService facebookTokenService;
-    
+
     /**
-     * 即时发帖接口
+     * 获取用户ID - 从JWT认证信息中获取
      */
-    @PostMapping("/posts/publish")
-    public ResponseEntity<Map<String, Object>> publishPost(@Valid @RequestBody SocialPostRequest request) {
+    private Long getUserIdFromToken(HttpServletRequest request) {
+        // 从request属性中获取用户ID
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            logger.warn("未从JWT中获取到用户ID");
+            // 实际环境中应该抛出异常或返回错误，这里为了演示暂时返回固定值
+            return 1L;
+        }
+        return userId;
+    }
+
+    /**
+     * 发布即时帖子
+     */
+    @Operation(
+            summary = "发布即时帖子",
+            description = "在指定社交媒体平台上发布即时帖子",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "发布成功"),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "发布失败")
+    })
+    @PostMapping("/publish")
+    public ResponseEntity<SocialPostResponse> publishPost(
+            @RequestBody SocialPostRequest request,
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long operatorId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 发布即时帖子", userId);
             
-            logger.info("收到即时发帖请求，操作人ID: {}", operatorId);
-            
-            SocialPostResponse response = socialMediaService.publishPost(request, operatorId);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 200);
-            result.put("data", response);
-            result.put("message", "发帖成功");
-            
-            return ResponseEntity.ok(result);
-            
-        } catch (IllegalArgumentException e) {
-            logger.error("即时发帖参数错误: {}", e.getMessage());
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 400);
-            result.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
-            
+            // 调用服务层发布帖子
+            SocialPostResponse response = socialMediaService.publishPost(request, userId);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("即时发帖失败: {}", e.getMessage(), e);
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 500);
-            result.put("message", "发帖失败: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(result);
+            logger.error("发布即时帖子失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     /**
-     * 定时发帖接口
+     * 创建定时发帖任务
      */
-    @PostMapping("/posts/schedule")
-    public ResponseEntity<Map<String, Object>> schedulePost(@Valid @RequestBody SocialPostRequest request) {
+    @Operation(
+            summary = "创建定时发帖任务",
+            description = "创建一个定时发布到社交媒体平台的任务",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "任务创建成功"),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "任务创建失败")
+    })
+    @PostMapping("/schedule")
+    public ResponseEntity<?> schedulePost(
+            @RequestBody SocialPostRequest request,
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long operatorId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 创建定时发帖任务", userId);
             
-            logger.info("收到定时发帖请求，操作人ID: {}, 定时时间: {}", operatorId, request.getScheduleTime());
-            
-            SocialPostResponse response = socialMediaService.schedulePost(request, operatorId);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 200);
-            result.put("data", response);
-            result.put("message", "定时任务创建成功");
-            
-            return ResponseEntity.ok(result);
-            
-        } catch (IllegalArgumentException e) {
-            logger.error("定时发帖参数错误: {}", e.getMessage());
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 400);
-            result.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
-            
+            // 调用服务层创建定时任务
+            SocialPostResponse response = socialMediaService.schedulePost(request, userId);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("定时发帖失败: {}", e.getMessage(), e);
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 500);
-            result.put("message", "定时任务创建失败: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(result);
+            logger.error("创建定时发帖任务失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     /**
-     * 查看定时任务列表
+     * 获取定时任务列表
      */
     @Operation(
             summary = "获取定时任务列表",
-            description = "分页查询定时发帖任务列表，支持按状态筛选",
+            description = "获取用户的所有定时发帖任务列表",
             security = @SecurityRequirement(name = "bearerAuth"),
-            tags = {"社媒管理"}
+            tags = {"社交媒体管理"}
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "查询成功", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 200, \"message\": \"查询成功\", \"data\": {\"content\": [{\"id\": 1, \"platform\": \"facebook\", \"content\": \"任务内容\", \"status\": 0}], \"totalElements\": 10}}"))),
-            @ApiResponse(responseCode = "500", description = "查询失败", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 500, \"message\": \"查询失败\"}")))
+            @ApiResponse(responseCode = "200", description = "获取成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "获取失败")
     })
-    @GetMapping("/posts/tasks")
-    public ResponseEntity<Map<String, Object>> getTaskList(
-            @Parameter(description = "页码，从1开始", example = "1") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "每页大小", example = "20") @RequestParam(defaultValue = "20") int size,
-            @Parameter(description = "任务状态筛选，0-待执行，1-执行中，2-已完成，3-已取消，4-执行失败") @RequestParam(required = false) Integer taskStatus) {
+    @GetMapping("/tasks")
+    public ResponseEntity<?> getTaskList(
+            @Parameter(description = "页码", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数", example = "10") @RequestParam(defaultValue = "10") Integer pageSize,
+            HttpServletRequest servletRequest) {
         try {
-            Pageable pageable = PageRequest.of(page - 1, size);
-            Page<SocialPostTask> taskPage = socialMediaService.getTaskList(taskStatus, pageable);
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 获取定时任务列表", userId);
             
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 200);
-            result.put("data", taskPage);
-            result.put("message", "查询成功");
-            
-            return ResponseEntity.ok(result);
-            
+            // 调用服务层获取任务列表
+            Pageable pageable = PageRequest.of(page - 1, pageSize);
+            Page<SocialPostTask> taskPage = socialMediaService.getTaskList(null, pageable);
+            return ResponseEntity.ok(taskPage);
         } catch (Exception e) {
-            logger.error("查询任务列表失败: {}", e.getMessage(), e);
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 500);
-            result.put("message", "查询失败: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(result);
+            logger.error("获取定时任务列表失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     /**
      * 取消定时任务
      */
@@ -169,451 +169,602 @@ public class SocialMediaController {
             summary = "取消定时任务",
             description = "取消指定的定时发帖任务",
             security = @SecurityRequirement(name = "bearerAuth"),
-            tags = {"社媒管理"}
+            tags = {"社交媒体管理"}
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "任务取消成功", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 200, \"message\": \"任务取消成功\"}"))),
-            @ApiResponse(responseCode = "400", description = "参数错误", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 400, \"message\": \"任务不存在或无法取消\"}"))),
-            @ApiResponse(responseCode = "500", description = "取消任务失败", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 500, \"message\": \"取消任务失败\"}")))
+            @ApiResponse(responseCode = "200", description = "取消成功"),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "取消失败")
     })
-    @PostMapping("/posts/tasks/{taskId}/cancel")
-    public ResponseEntity<Map<String, Object>> cancelTask(
-            @Parameter(description = "任务ID", example = "1") @PathVariable Long taskId) {
+    @DeleteMapping("/tasks/{taskId}")
+    public ResponseEntity<?> cancelTask(
+            @PathVariable Long taskId,
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long operatorId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 取消定时任务 {} 失败", userId, taskId);
             
-            logger.info("收到取消任务请求，任务ID: {}, 操作人ID: {}", taskId, operatorId);
-            
-            socialMediaService.cancelTask(taskId, operatorId);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 200);
-            result.put("message", "任务取消成功");
-            
-            return ResponseEntity.ok(result);
-            
-        } catch (IllegalArgumentException e) {
-            logger.error("取消任务参数错误: {}", e.getMessage());
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 400);
-            result.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
-            
+            // 调用服务层取消任务
+            socialMediaService.cancelTask(taskId, userId);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error("取消任务失败: {}", e.getMessage(), e);
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 500);
-            result.put("message", "取消任务失败: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(result);
+            logger.error("取消定时任务失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     /**
      * 获取用户主页列表
      */
     @Operation(
             summary = "获取用户主页列表",
-            description = "获取用户在各社交平台的主页信息",
+            description = "获取用户绑定的所有社交媒体主页列表",
             security = @SecurityRequirement(name = "bearerAuth"),
-            tags = {"社媒管理"}
+            tags = {"社交媒体管理"}
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "获取成功", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 200, \"message\": \"获取成功\", \"data\": [{\"platform\": \"facebook\", \"pageId\": \"123456\", \"pageName\": \"我的主页\"}]}"))),
-            @ApiResponse(responseCode = "500", description = "获取失败", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 500, \"message\": \"获取失败\"}")))
+            @ApiResponse(responseCode = "200", description = "获取成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "获取失败")
     })
-    @GetMapping("/homepages/fetch")
-    public ResponseEntity<Map<String, Object>> fetchHomepages() {
+    @GetMapping("/homepages")
+    public ResponseEntity<?> fetchHomepages(
+            @Parameter(description = "平台类型", example = "1") @RequestParam(required = false) Integer platformType,
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 获取主页列表", userId);
             
+            // 调用服务层获取主页列表
             List<SocialHomepage> homepages = socialMediaService.getUserHomepages(userId);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 200);
-            result.put("data", homepages);
-            result.put("message", "查询成功");
-            
-            return ResponseEntity.ok(result);
-            
+            // 如果指定了平台类型，进行过滤
+            if (platformType != null) {
+                homepages = homepages.stream()
+                    .filter(homepage -> homepage.getPlatformType().equals(platformType))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            return ResponseEntity.ok(homepages);
         } catch (Exception e) {
-            logger.error("查询用户主页失败: {}", e.getMessage(), e);
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 500);
-            result.put("message", "查询失败: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(result);
+            logger.error("获取主页列表失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     /**
      * 获取帖子列表
      */
     @Operation(
             summary = "获取帖子列表",
-            description = "分页查询用户的发帖历史记录",
+            description = "获取用户发布的所有帖子列表",
             security = @SecurityRequirement(name = "bearerAuth"),
-            tags = {"社媒管理"}
+            tags = {"社交媒体管理"}
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "查询成功", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 200, \"message\": \"查询成功\", \"data\": {\"content\": [{\"id\": 1, \"platform\": \"facebook\", \"content\": \"帖子内容\", \"publishTime\": \"2024-01-01 12:00:00\"}], \"totalElements\": 50}}"))),
-            @ApiResponse(responseCode = "500", description = "查询失败", 
-                    content = @Content(mediaType = "application/json", 
-                    schema = @Schema(example = "{\"code\": 500, \"message\": \"查询失败\"}")))
+            @ApiResponse(responseCode = "200", description = "获取成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "获取失败")
     })
     @GetMapping("/posts")
-    public ResponseEntity<Map<String, Object>> getPosts(
-            @Parameter(description = "页码，从1开始", example = "1") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "每页大小", example = "20") @RequestParam(defaultValue = "20") int size) {
+    public ResponseEntity<?> getPosts(
+            @Parameter(description = "页码", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数", example = "10") @RequestParam(defaultValue = "10") Integer pageSize,
+            @Parameter(description = "平台类型", example = "1") @RequestParam(required = false) Integer platformType,
+            @Parameter(description = "主页ID", example = "123") @RequestParam(required = false) String homepageId,
+            HttpServletRequest servletRequest) {
         try {
-            Pageable pageable = PageRequest.of(page - 1, size);
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 获取帖子列表", userId);
+            
+            // 调用服务层获取帖子列表
+            Pageable pageable = PageRequest.of(page - 1, pageSize);
             Page<SocialPost> postPage = socialMediaService.getPostList(pageable);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 200);
-            result.put("data", postPage);
-            result.put("message", "查询成功");
-            
-            return ResponseEntity.ok(result);
-            
+            return ResponseEntity.ok(postPage);
         } catch (Exception e) {
-            logger.error("查询帖子列表失败: {}", e.getMessage(), e);
-            Map<String, Object> result = new HashMap<>();
-            result.put("code", 500);
-            result.put("message", "查询失败: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(result);
+            logger.error("获取帖子列表失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     /**
-     * 重试失败任务
+     * 重试失败的任务
      */
-    @PostMapping("/posts/tasks/{taskId}/retry")
-    public ResponseEntity<Map<String, Object>> retryTask(
-            @Parameter(description = "任务ID", example = "1") @PathVariable Long taskId, jakarta.servlet.http.HttpServletRequest request) {
-        Map<String, Object> response = new HashMap<>();
+    @Operation(
+            summary = "重试失败的任务",
+            description = "重试指定的失败任务",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "重试成功"),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "重试失败")
+    })
+    @PostMapping("/tasks/{taskId}/retry")
+    public ResponseEntity<?> retryTask(
+            @PathVariable Long taskId,
+            HttpServletRequest servletRequest) {
         try {
-            // 从request属性中获取用户ID，这是从JWT认证过滤器中设置的
-            Long operatorId = (Long) request.getAttribute("userId");
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 重试任务 {}", userId, taskId);
             
-            if (operatorId == null) {
-                logger.error("无法获取用户ID，认证失败");
-                response.put("code", 401);
-                response.put("message", "认证失败，请重新登录");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-            }
-            
-            logger.info("收到重试任务请求，任务ID: {}, 操作人ID: {}", taskId, operatorId);
-            
-            socialMediaService.retryTask(taskId, operatorId);
-            
-            response.put("code", 200);
-            response.put("message", "任务重试成功");
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            logger.error("重试任务参数错误: {}", e.getMessage());
-            response.put("code", 400);
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            // 调用服务层重试任务
+            socialMediaService.retryTask(taskId, userId);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("重试任务失败", e);
-            response.put("code", 500);
-            response.put("message", "任务重试失败");
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     // ==================== Facebook 专用接口 ====================
-    
+
     /**
      * 获取Facebook授权URL
      */
+    @Operation(
+            summary = "获取Facebook授权URL",
+            description = "获取用于引导用户授权Facebook账号的URL",
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "获取成功"),
+            @ApiResponse(responseCode = "500", description = "获取失败")
+    })
     @GetMapping("/facebook/auth-url")
-    @Operation(summary = "获取Facebook授权URL", description = "获取Facebook OAuth授权链接")
-    public ResponseEntity<Map<String, Object>> getFacebookAuthUrl() {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<String> getFacebookAuthUrl(
+            @Parameter(description = "授权成功后的重定向URL", example = "http://localhost:8080/callback") 
+            @RequestParam(required = false) String redirectUrl) {
         try {
-            // TODO: 实现Facebook授权URL生成逻辑
-            String authUrl = "https://www.facebook.com/v19.0/dialog/oauth?client_id=YOUR_APP_ID&redirect_uri=YOUR_REDIRECT_URI&scope=pages_manage_posts,pages_read_engagement";
+            logger.info("获取Facebook授权URL");
             
-            response.put("code", 200);
-            response.put("message", "获取成功");
-            response.put("data", Map.of("authUrl", authUrl));
-            return ResponseEntity.ok(response);
+            // 调用服务层生成授权URL
+            String authUrl = socialMediaService.getFacebookAuthUrl(redirectUrl);
+            return ResponseEntity.ok(authUrl);
         } catch (Exception e) {
             logger.error("获取Facebook授权URL失败", e);
-            response.put("code", 500);
-            response.put("message", "获取授权URL失败");
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     /**
-     * 验证Facebook访问令牌
+     * 验证Facebook令牌
      */
+    @Operation(
+            summary = "验证Facebook令牌",
+            description = "验证Facebook访问令牌的有效性",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "验证成功"),
+            @ApiResponse(responseCode = "400", description = "令牌无效"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "验证失败")
+    })
     @PostMapping("/facebook/verify-token")
-    @Operation(summary = "验证Facebook访问令牌", description = "验证Facebook访问令牌的有效性")
-    public ResponseEntity<Map<String, Object>> verifyFacebookToken(@RequestBody Map<String, String> request) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> verifyFacebookToken(
+            @Parameter(description = "Facebook访问令牌、APP ID和APP密钥") @RequestBody(required = false) String rawRequestBody,
+            HttpServletRequest servletRequest) {
         try {
-            String accessToken = request.get("accessToken");
-            if (accessToken == null || accessToken.isEmpty()) {
-                response.put("code", 400);
-                response.put("message", "访问令牌不能为空");
-                return ResponseEntity.badRequest().body(response);
+            // 添加原始请求体调试日志
+            logger.info("收到原始请求体: {}", rawRequestBody);
+            
+            // 手动解析JSON
+            Map<String, String> requestBody = new HashMap<>();
+            if (rawRequestBody != null && !rawRequestBody.trim().isEmpty()) {
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    requestBody = objectMapper.readValue(rawRequestBody, Map.class);
+                    logger.info("成功解析请求体: {}", requestBody);
+                } catch (Exception e) {
+                    logger.error("解析请求体失败: {}", e.getMessage());
+                    return ResponseEntity.badRequest().body(
+                            Map.of("valid", false, "error", "请求体格式错误: " + e.getMessage())
+                    );
+                }
+            } else {
+                logger.warn("请求体为空");
+                return ResponseEntity.badRequest().body(
+                        Map.of("valid", false, "error", "请求体不能为空")
+                );
             }
-
-            // 调用Facebook Token验证服务
-            FacebookTokenValidationResult validationResult = facebookTokenService.verifyToken(accessToken);
+            
+            // 获取用户ID（可选）
+            Long userId = getUserIdFromToken(servletRequest);
+            if (userId != null) {
+                logger.info("用户 {} 请求验证Facebook访问令牌", userId);
+            } else {
+                logger.info("匿名用户请求验证Facebook访问令牌");
+            }
+            
+            // 添加调试日志：打印接收到的请求体
+            logger.info("接收到的请求体: {}", requestBody);
+            logger.info("请求体大小: {}", requestBody != null ? requestBody.size() : "null");
+            if (requestBody != null) {
+                for (Map.Entry<String, String> entry : requestBody.entrySet()) {
+                    String value = entry.getValue();
+                    String maskedValue = value != null && value.length() > 10 ? 
+                        value.substring(0, 5) + "*****" + value.substring(value.length() - 5) : 
+                        (value != null ? "******" : "null");
+                    logger.info("参数 {}: {}", entry.getKey(), maskedValue);
+                }
+            }
+            
+            // 支持两种参数格式：token 或 accessToken
+            String accessToken = requestBody.get("token");
+            if (accessToken == null) {
+                accessToken = requestBody.get("accessToken");
+            }
+            
+            String appId = requestBody.get("appId");
+            String appSecret = requestBody.get("appSecret");
+            
+            // 参数校验
+            if (accessToken == null || accessToken.trim().isEmpty()) {
+                String userIdLog = userId != null ? "[用户ID: " + userId + "]" : "";
+                logger.warn("Facebook Token验证失败：缺少访问令牌参数 {}", userIdLog);
+                return ResponseEntity.badRequest().body(
+                        Map.of("valid", false, "error", "访问令牌不能为空")
+                );
+            }
+            
+            // APP ID和APP密钥为可选参数，但如果提供了一个，最好两个都提供
+            if ((appId != null && appSecret == null) || (appId == null && appSecret != null)) {
+                String userIdLog = userId != null ? "[用户ID: " + userId + "]" : "";
+                logger.warn("Facebook Token验证：APP ID和APP密钥应同时提供 {}", userIdLog);
+            }
+            
+            // 记录详细日志，但注意不要记录完整的access token
+            String maskedToken = accessToken.length() > 10 ? accessToken.substring(0, 5) + "*****" + accessToken.substring(accessToken.length() - 5) : "******";
+            String userIdLog = userId != null ? ", 用户ID: " + userId : "";
+            logger.info("验证Facebook访问令牌，APP ID: {}{}, 令牌前5后5位: {}", appId, userIdLog, maskedToken);
+            
+            // 调用服务层验证令牌
+            FacebookTokenService.FacebookTokenValidationResult validationResult = facebookTokenService.verifyToken(accessToken);
             
             if (validationResult.isValid()) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("valid", true);
-                data.put("userId", validationResult.getUserId());
-                data.put("userName", validationResult.getUserName());
-                data.put("userEmail", validationResult.getUserEmail());
-                
-                response.put("code", 200);
-                response.put("message", "Token验证成功");
-                response.put("data", data);
-                return ResponseEntity.ok(response);
+                // 返回详细的验证成功信息
+                return ResponseEntity.ok(Map.of(
+                        "valid", true,
+                        "details", Map.of(
+                                "userId", validationResult.getUserId(),
+                                "userName", validationResult.getUserName(),
+                                "userEmail", validationResult.getUserEmail(),
+                                "tokenStatus", "有效"
+                        )
+                ));
             } else {
-                response.put("code", 400);
-                response.put("message", validationResult.getErrorMessage());
-                response.put("data", Map.of("valid", false));
-                return ResponseEntity.badRequest().body(response);
+                // 返回详细的验证失败信息
+                logger.warn("Facebook Token验证失败：{}{}", validationResult.getErrorMessage(), userIdLog);
+                return ResponseEntity.badRequest().body(
+                        Map.of("valid", false, "error", validationResult.getErrorMessage())
+                );
+            }
+        } catch (IllegalArgumentException e) {
+            logger.warn("Facebook Token验证参数异常: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    Map.of("valid", false, "error", e.getMessage())
+            );
+        } catch (Exception e) {
+            logger.error("验证Facebook访问令牌失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("valid", false, "error", "验证失败，请稍后重试")
+            );
+        }
+    }
+
+    /**
+     * Facebook回调接口
+     * 处理Facebook授权成功后的回调，用于保存访问令牌
+     */
+    @GetMapping("/facebook/callback")
+    @Operation(summary = "Facebook回调接口", description = "处理Facebook授权成功后的回调")
+    public ResponseEntity<Void> handleFacebookCallback(
+            @RequestParam("code") String code,
+            @RequestParam("state") String state,
+            jakarta.servlet.http.HttpServletRequest request) {
+        try {
+            // 从request属性中获取用户ID
+            Long userId = (Long) request.getAttribute("userId");
+            
+            if (userId == null) {
+                // 如果没有用户ID，说明用户未登录，重定向到登录页面
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header(HttpHeaders.LOCATION, "/login")
+                        .build();
             }
             
+            // 解码state参数，获取原始的重定向URL
+            byte[] decodedState = Base64.getDecoder().decode(state);
+            String redirectUrl = new String(decodedState, StandardCharsets.UTF_8);
+            
+            logger.info("收到Facebook回调，用户ID: {}, code: {}, 重定向URL: {}", userId, code, redirectUrl);
+            
+            // 处理Facebook回调
+            boolean success = socialMediaService.handleFacebookCallback(code, redirectUrl, userId);
+            
+            if (success) {
+                // 回调处理成功，重定向到成功页面
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header(HttpHeaders.LOCATION, "/social/facebook/success")
+                        .build();
+            } else {
+                // 回调处理失败，重定向到失败页面
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header(HttpHeaders.LOCATION, "/social/facebook/error")
+                        .build();
+            }
         } catch (Exception e) {
-            logger.error("验证Facebook令牌失败", e);
-            response.put("code", 500);
-            response.put("message", "验证Facebook令牌失败: " + e.getMessage());
-            response.put("data", Map.of("valid", false));
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            logger.error("处理Facebook回调失败", e);
+            // 发生异常，重定向到错误页面
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/social/facebook/error")
+                    .build();
         }
     }
 
     /**
      * 保存Facebook访问令牌
      */
+    @Operation(
+            summary = "保存Facebook访问令牌",
+            description = "保存用户的Facebook访问令牌、APP ID和APP密钥",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "保存成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误"),
+            @ApiResponse(responseCode = "500", description = "服务器内部错误")
+    })
     @PostMapping("/facebook/save-token")
-    @Operation(summary = "保存Facebook访问令牌", description = "保存用户的Facebook访问令牌")
-    public ResponseEntity<Map<String, Object>> saveFacebookToken(@RequestBody Map<String, String> request) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> saveFacebookToken(
+            @Parameter(description = "Facebook访问令牌、APPID和APP密钥") @RequestBody Map<String, String> requestBody,
+            HttpServletRequest servletRequest) {
         try {
-            String token = request.get("token");
-            if (token == null || token.isEmpty()) {
-                response.put("code", 400);
-                response.put("message", "访问令牌不能为空");
-                return ResponseEntity.badRequest().body(response);
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            if (userId == null) {
+                logger.warn("Facebook Token保存失败：用户未登录或令牌无效");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("用户未登录或令牌无效");
             }
-
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
             
-            // TODO: 实现保存Facebook Token的逻辑
-            // socialMediaService.saveFacebookToken(userId, token);
+            // 支持两种参数格式：token 或 accessToken
+            String accessToken = requestBody.get("token");
+            if (accessToken == null) {
+                accessToken = requestBody.get("accessToken");
+            }
             
-            response.put("code", 200);
-            response.put("message", "Facebook账号绑定成功");
-            return ResponseEntity.ok(response);
+            String appId = requestBody.get("appId");
+            String appSecret = requestBody.get("appSecret");
+            
+            // 参数校验
+            if (accessToken == null || accessToken.trim().isEmpty()) {
+                logger.warn("Facebook Token保存失败：缺少访问令牌参数 [用户ID: {}]", userId);
+                return ResponseEntity.badRequest().body("访问令牌不能为空");
+            }
+            
+            // APP ID和APP密钥为可选参数，但如果提供了一个，最好两个都提供
+            if ((appId != null && appSecret == null) || (appId == null && appSecret != null)) {
+                logger.warn("Facebook Token保存：APP ID和APP密钥应同时提供 [用户ID: {}]", userId);
+            }
+            
+            // 记录详细日志，但注意不要记录完整的access token
+            String maskedToken = accessToken.length() > 10 ? accessToken.substring(0, 5) + "*****" + accessToken.substring(accessToken.length() - 5) : "******";
+            logger.info("用户 {} 保存Facebook访问令牌，APP ID: {}，令牌前5后5位: {}", userId, appId, maskedToken);
+            
+            // 调用服务层保存令牌
+            socialMediaService.saveFacebookToken(userId, accessToken, appId, appSecret);
+            return ResponseEntity.ok().body("Facebook访问令牌保存成功");
+        } catch (IllegalArgumentException e) {
+            logger.warn("Facebook Token保存参数异常: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            logger.error("保存Facebook令牌失败", e);
-            response.put("code", 500);
-            response.put("message", "绑定Facebook账号失败");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            logger.error("保存Facebook访问令牌失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("保存Facebook访问令牌失败，请稍后重试");
         }
     }
 
     /**
      * 解绑Facebook账号
      */
-    @PostMapping("/facebook/unbind")
-    @Operation(summary = "解绑Facebook账号", description = "解除Facebook账号绑定")
-    public ResponseEntity<Map<String, Object>> unbindFacebook() {
-        Map<String, Object> response = new HashMap<>();
+    @Operation(
+            summary = "解绑Facebook账号",
+            description = "解绑用户的Facebook账号绑定",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "解绑成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "解绑失败")
+    })
+    @DeleteMapping("/facebook/unbind")
+    public ResponseEntity<?> unbindFacebook(
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 解绑Facebook账号", userId);
             
-            // TODO: 实现解绑Facebook账号的逻辑
-            // socialMediaService.unbindFacebook(userId);
-            
-            response.put("code", 200);
-            response.put("message", "Facebook账号解绑成功");
-            return ResponseEntity.ok(response);
+            // 调用服务层解绑账号
+            socialMediaService.unbindFacebook(userId);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("解绑Facebook账号失败", e);
-            response.put("code", 500);
-            response.put("message", "解绑Facebook账号失败");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
      * 获取Facebook帖子列表
      */
+    @Operation(
+            summary = "获取Facebook帖子列表",
+            description = "获取用户Facebook主页上的帖子列表",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "获取成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "获取失败")
+    })
     @GetMapping("/facebook/posts")
-    @Operation(summary = "获取Facebook帖子", description = "获取用户Facebook页面的帖子列表")
-    public ResponseEntity<Map<String, Object>> getFacebookPosts(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> getFacebookPosts(
+            @Parameter(description = "页码", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数", example = "10") @RequestParam(defaultValue = "10") Integer pageSize,
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 获取Facebook帖子列表", userId);
             
-            // TODO: 实现获取Facebook帖子的逻辑
-            // Page<SocialPost> posts = socialMediaService.getFacebookPosts(userId, page - 1, size);
-            
-            // 模拟返回数据
-            Map<String, Object> data = new HashMap<>();
-            data.put("content", List.of());
-            data.put("totalElements", 0);
-            data.put("totalPages", 0);
-            data.put("currentPage", page);
-            
-            response.put("code", 200);
-            response.put("message", "获取成功");
-            response.put("data", data);
-            return ResponseEntity.ok(response);
+            // 调用服务层获取Facebook帖子列表
+            return ResponseEntity.ok(socialMediaService.getFacebookPosts(userId, page, pageSize));
         } catch (Exception e) {
-            logger.error("获取Facebook帖子失败", e);
-            response.put("code", 500);
-            response.put("message", "获取Facebook帖子失败");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            logger.error("获取Facebook帖子列表失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     // ==================== Instagram 专用接口 ====================
-    
+
     /**
      * 获取Instagram Pages
      */
+    @Operation(
+            summary = "获取Instagram Pages",
+            description = "获取用户绑定的Instagram Business Pages",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "获取成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "获取失败")
+    })
     @GetMapping("/instagram/pages")
-    @Operation(summary = "获取Instagram Pages", description = "获取用户的Instagram Business Pages")
-    public ResponseEntity<Map<String, Object>> getInstagramPages() {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> getInstagramPages(
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 获取Instagram Pages", userId);
             
-            // TODO: 实现获取Instagram Pages的逻辑
-            // List<InstagramPage> pages = socialMediaService.getInstagramPages(userId);
-            
-            response.put("code", 200);
-            response.put("message", "获取成功");
-            response.put("data", List.of());
-            return ResponseEntity.ok(response);
+            // 调用服务层获取Instagram Pages
+            return ResponseEntity.ok(socialMediaService.getInstagramPages(userId));
         } catch (Exception e) {
             logger.error("获取Instagram Pages失败", e);
-            response.put("code", 500);
-            response.put("message", "获取Instagram Pages失败");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
      * 选择Instagram Page
      */
+    @Operation(
+            summary = "选择Instagram Page",
+            description = "选择要使用的Instagram Page",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "选择成功"),
+            @ApiResponse(responseCode = "400", description = "请求参数错误"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "选择失败")
+    })
     @PostMapping("/instagram/select-page")
-    @Operation(summary = "选择Instagram Page", description = "选择要管理的Instagram Business Page")
-    public ResponseEntity<Map<String, Object>> selectInstagramPage(@RequestBody Map<String, String> request) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> selectInstagramPage(
+            @Parameter(description = "Instagram Page ID") @RequestBody Map<String, String> requestBody,
+            HttpServletRequest servletRequest) {
         try {
-            String pageId = request.get("pageId");
-            if (pageId == null || pageId.isEmpty()) {
-                response.put("code", 400);
-                response.put("message", "页面ID不能为空");
-                return ResponseEntity.badRequest().body(response);
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            String pageId = requestBody.get("pageId");
+            
+            if (pageId == null) {
+                return ResponseEntity.badRequest().build();
             }
-
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
             
-            // TODO: 实现选择Instagram Page的逻辑
-            // socialMediaService.selectInstagramPage(userId, pageId);
+            logger.info("用户 {} 选择Instagram Page: {}", userId, pageId);
             
-            response.put("code", 200);
-            response.put("message", "Instagram页面选择成功");
-            return ResponseEntity.ok(response);
+            // 调用服务层选择Instagram Page
+            socialMediaService.selectInstagramPage(userId, pageId);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("选择Instagram Page失败", e);
-            response.put("code", 500);
-            response.put("message", "选择Instagram页面失败");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
      * 解绑Instagram账号
      */
-    @PostMapping("/instagram/unbind")
-    @Operation(summary = "解绑Instagram账号", description = "解除Instagram账号绑定")
-    public ResponseEntity<Map<String, Object>> unbindInstagram() {
-        Map<String, Object> response = new HashMap<>();
+    @Operation(
+            summary = "解绑Instagram账号",
+            description = "解绑用户的Instagram账号绑定",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "解绑成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "解绑失败")
+    })
+    @DeleteMapping("/instagram/unbind")
+    public ResponseEntity<?> unbindInstagram(
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 解绑Instagram账号", userId);
             
-            // TODO: 实现解绑Instagram账号的逻辑
-            // socialMediaService.unbindInstagram(userId);
-            
-            response.put("code", 200);
-            response.put("message", "Instagram账号解绑成功");
-            return ResponseEntity.ok(response);
+            // 调用服务层解绑账号
+            socialMediaService.unbindInstagram(userId);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("解绑Instagram账号失败", e);
-            response.put("code", 500);
-            response.put("message", "解绑Instagram账号失败");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
      * 获取Instagram帖子列表
      */
+    @Operation(
+            summary = "获取Instagram帖子列表",
+            description = "获取用户Instagram主页上的帖子列表",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            tags = {"社交媒体管理"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "获取成功"),
+            @ApiResponse(responseCode = "401", description = "未授权"),
+            @ApiResponse(responseCode = "500", description = "获取失败")
+    })
     @GetMapping("/instagram/posts")
-    @Operation(summary = "获取Instagram帖子", description = "获取用户Instagram页面的帖子列表")
-    public ResponseEntity<Map<String, Object>> getInstagramPosts(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> getInstagramPosts(
+            @Parameter(description = "页码", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页条数", example = "10") @RequestParam(defaultValue = "10") Integer pageSize,
+            HttpServletRequest servletRequest) {
         try {
-            // 这里应该从JWT token中获取用户ID，暂时使用固定值
-            Long userId = 1L; // TODO: 从认证信息中获取
+            // 获取用户ID
+            Long userId = getUserIdFromToken(servletRequest);
+            logger.info("用户 {} 获取Instagram帖子列表", userId);
             
-            // TODO: 实现获取Instagram帖子的逻辑
-            // Page<SocialPost> posts = socialMediaService.getInstagramPosts(userId, page - 1, size);
-            
-            // 模拟返回数据
-            Map<String, Object> data = new HashMap<>();
-            data.put("content", List.of());
-            data.put("totalElements", 0);
-            data.put("totalPages", 0);
-            data.put("currentPage", page);
-            
-            response.put("code", 200);
-            response.put("message", "获取成功");
-            response.put("data", data);
-            return ResponseEntity.ok(response);
+            // 调用服务层获取Instagram帖子列表
+            return ResponseEntity.ok(socialMediaService.getInstagramPosts(userId, page, pageSize));
         } catch (Exception e) {
-            logger.error("获取Instagram帖子失败", e);
-            response.put("code", 500);
-            response.put("message", "获取Instagram帖子失败");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            logger.error("获取Instagram帖子列表失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

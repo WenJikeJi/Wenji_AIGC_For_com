@@ -50,6 +50,9 @@ public class AuthService {
     @Autowired
     private EmailUtil emailUtil;
     
+    @Autowired
+    private UserStatsService userStatsService;
+    
     @Value("${data.python.url}")
     private String dataPythonUrl;
     
@@ -116,14 +119,19 @@ public class AuthService {
             // 7. 更新最后登录信息
             userAccountRepository.updateLastLoginInfo(user.getId(), LocalDateTime.now(), ip, address);
             
+            // 7.1. 记录用户活跃度
+            userStatsService.recordUserActivity(user.getEmail());
+            
             // 8. 生成JWT令牌
             System.out.println("生成JWT令牌的参数:");
             System.out.println("用户ID: " + user.getId());
             System.out.println("用户账号: " + user.getAccount());
             System.out.println("用户角色: " + user.getRole());
             String token = jwtUtil.generateToken(user.getId(), user.getAccount(), user.getRole());
+            String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getAccount());
             System.out.println("生成的JWT令牌: " + token);
-            
+            System.out.println("生成的刷新令牌: " + refreshToken);
+
             // 9. 记录操作日志到Python服务
             try {
                 logClient.recordOperationLog(
@@ -142,6 +150,7 @@ public class AuthService {
             // 10. 返回结果
             Map<String, Object> result = new HashMap<>();
             result.put("token", token);
+            result.put("refreshToken", refreshToken);
             result.put("user", user);
             return result;
         
@@ -503,5 +512,50 @@ public class AuthService {
         boolean hasSpecial = password.matches(".*[^a-zA-Z0-9].*");
         
         return hasDigit && hasLetter && hasSpecial;
+    }
+    
+    // 刷新JWT令牌
+    public Map<String, Object> refreshToken(String refreshToken) {
+        try {
+            // 验证刷新令牌格式
+            if (refreshToken == null || refreshToken.trim().isEmpty()) {
+                throw new RuntimeException("刷新令牌不能为空");
+            }
+            
+            // 获取用户名和用户ID
+            String username = jwtUtil.getUsernameFromToken(refreshToken);
+            Long userId = jwtUtil.getUserIdFromRefreshToken(refreshToken);
+            
+            // 验证刷新令牌
+            if (!jwtUtil.validateRefreshToken(refreshToken, username)) {
+                throw new RuntimeException("刷新令牌无效或已过期");
+            }
+            
+            // 获取用户信息
+            UserAccount user = userAccountRepository.findByAccount(username)
+                    .orElseThrow(() -> new RuntimeException("用户不存在"));
+            
+            // 生成新的访问令牌和刷新令牌
+            String newAccessToken = jwtUtil.generateToken(user.getId(), user.getAccount(), user.getRole());
+            String newRefreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getAccount());
+            
+            System.out.println("刷新令牌成功:");
+            System.out.println("用户: " + username);
+            System.out.println("新访问令牌: " + newAccessToken);
+            System.out.println("新刷新令牌: " + newRefreshToken);
+            
+            // 返回新令牌
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", newAccessToken);
+            result.put("refreshToken", newRefreshToken);
+            result.put("userId", user.getId());
+            result.put("username", user.getUsername());
+            result.put("role", user.getRole());
+            
+            return result;
+        } catch (Exception e) {
+            System.err.println("刷新令牌失败: " + e.getMessage());
+            throw new RuntimeException("刷新令牌失败: " + e.getMessage());
+        }
     }
 }

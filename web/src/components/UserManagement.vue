@@ -24,23 +24,25 @@
       <main class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-blue-50 p-4">
         
         <!-- 编辑成员弹窗 -->
-        <div v-if="showEditMemberModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-lg w-full max-w-2xl p-6 relative shadow-xl border border-gray-200 mx-auto max-h-[90vh] overflow-y-auto">
+        <div v-if="showEditMemberModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div class="bg-white rounded-xl w-full max-w-2xl p-6 relative shadow-2xl border border-gray-100 mx-auto max-h-[90vh] overflow-y-auto">
             <!-- 关闭按钮 -->
             <button 
               @click="closeEditMemberModal"
-              class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 z-10"
+              class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 z-10"
             >
               <i class="fas fa-times text-lg"></i>
             </button>
 
             <!-- 弹窗标题 -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                <i class="fas fa-user-edit text-blue-600 mr-2"></i>
+              <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-lg">
+                  <i class="fas fa-user-edit text-white text-sm"></i>
+                </div>
                 编辑成员信息
               </h3>
-              <p class="text-sm text-gray-500 mt-1">修改成员的基本信息和权限设置</p>
+              <p class="text-gray-600 text-sm mt-1 ml-13">修改成员的基本信息和权限设置</p>
             </div>
 
             <!-- 标签页导航 -->
@@ -49,42 +51,42 @@
                 <button
                   @click="editMemberActiveTab = 'basic'"
                   :class="[
-                    'py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200',
+                    'py-2 px-1 border-b-2 font-medium text-sm transition-all duration-300 flex items-center',
                     editMemberActiveTab === 'basic'
-                      ? 'border-blue-500 text-blue-600'
+                      ? 'border-purple-500 text-purple-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   ]"
                 >
-                  <i class="fas fa-user mr-2"></i>
+                  <i class="fas fa-user mr-2 text-sm"></i>
                   基本信息
                 </button>
                 <button
                   @click="editMemberActiveTab = 'logs'"
                   :class="[
-                    'py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200',
+                    'py-2 px-1 border-b-2 font-medium text-sm transition-all duration-300 flex items-center',
                     editMemberActiveTab === 'logs'
-                      ? 'border-blue-500 text-blue-600'
+                      ? 'border-purple-500 text-purple-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   ]"
                 >
-                  <i class="fas fa-history mr-2"></i>
+                  <i class="fas fa-history mr-2 text-sm"></i>
                   操作日志
                 </button>
               </nav>
             </div>
 
             <!-- 基本信息标签页 -->
-            <div v-if="editMemberActiveTab === 'basic'" class="space-y-4">
+            <div v-if="editMemberActiveTab === 'basic'" class="space-y-5">
               <!-- 错误提示 -->
-              <div v-if="editMemberFormErrors.length > 0" class="bg-red-50 border border-red-200 rounded-md p-3">
+              <div v-if="editMemberFormErrors.length > 0" class="bg-red-50 border border-red-200 rounded-lg p-3 shadow-sm">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                    <i class="fas fa-exclamation-circle text-red-500 text-sm"></i>
                   </div>
                   <div class="ml-3">
                     <h3 class="text-sm font-medium text-red-800">请修正以下错误：</h3>
-                    <div class="mt-2 text-sm text-red-700">
-                      <ul class="list-disc pl-5 space-y-1">
+                    <div class="mt-1 text-sm text-red-700">
+                      <ul class="list-disc pl-4 space-y-1">
                         <li v-for="error in editMemberFormErrors" :key="error">{{ error }}</li>
                       </ul>
                     </div>
@@ -92,196 +94,349 @@
                 </div>
               </div>
 
-              <!-- 表单字段 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- 姓名 -->
-                <div>
-                  <label for="edit-member-name" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-user text-gray-400 mr-1"></i>
-                    姓名
-                  </label>
-                  <input
-                    id="edit-member-name"
-                    v-model="editMemberForm.username"
-                    type="text"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                    placeholder="请输入姓名"
-                  />
+              <!-- 头像和基本信息 -->
+              <div class="flex gap-6">
+                <!-- 左侧头像区域 -->
+                <div class="flex-shrink-0">
+                  <div class="text-center">
+                    <div class="relative w-20 h-20 mx-auto mb-3">
+                      <!-- 头像显示 -->
+                      <div v-if="editMemberForm.avatar_url" class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                        <img 
+                          :src="editMemberForm.avatar_url" 
+                          alt="用户头像"
+                          class="w-full h-full object-cover"
+                        />
+                      </div>
+                      <!-- 默认头像色块 -->
+                      <div v-else class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center border-2 border-gray-200">
+                        <i class="fas fa-user text-white text-xl"></i>
+                      </div>
+                    </div>
+                    
+                    <!-- 上传按钮 -->
+                    <label class="cursor-pointer">
+                      <input 
+                        type="file" 
+                        accept="image/jpeg,image/png" 
+                        class="hidden"
+                        @change="handleAvatarUpload"
+                      />
+                      <span class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded-md hover:bg-purple-700 transition-colors duration-200">
+                        <i class="fas fa-upload mr-1.5"></i>
+                        上传头像
+                      </span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1.5">支持 JPG、PNG<br/>≤ 2M</p>
+                  </div>
                 </div>
 
-                <!-- 电话 -->
+                <!-- 右侧表单区域 -->
+                <div class="flex-1 space-y-4">
+                  <!-- 姓名和手机号 -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="edit-member-name" class="block text-sm font-medium text-gray-700 mb-1.5">
+                        姓名
+                      </label>
+                      <input
+                        id="edit-member-name"
+                        v-model="editMemberForm.username"
+                        type="text"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        placeholder="请输入姓名"
+                      />
+                    </div>
+
+                    <div>
+                      <label for="edit-member-phone" class="block text-sm font-medium text-gray-700 mb-1.5">
+                        手机号
+                      </label>
+                      <input
+                        id="edit-member-phone"
+                        v-model="editMemberForm.phone"
+                        type="tel"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        placeholder="请输入11位手机号码"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- 邮箱 -->
+                  <div>
+                    <label for="edit-member-email" class="block text-sm font-medium text-gray-700 mb-1.5">
+                      邮箱
+                    </label>
+                    <input
+                      id="edit-member-email"
+                      v-model="editMemberForm.email"
+                      type="email"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed text-sm"
+                      disabled
+                      placeholder="邮箱地址"
+                    />
+                    <p class="text-xs text-gray-500 mt-1">邮箱地址不可修改</p>
+                  </div>
+
+                  <!-- 状态和角色 -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="edit-member-status" class="block text-sm font-medium text-gray-700 mb-1.5">
+                        状态
+                      </label>
+                      <select
+                        id="edit-member-status"
+                        v-model="editMemberForm.account_status"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                      >
+                        <option value="NORMAL">正常</option>
+                        <option value="STOPPED">停用</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label for="edit-member-role" class="block text-sm font-medium text-gray-700 mb-1.5">
+                        角色
+                      </label>
+                      <select
+                        id="edit-member-role"
+                        v-model="editMemberForm.role"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                      >
+                        <option :value="0">管理员</option>
+                        <option :value="1">成员</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 时间信息 -->
+              <div class="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <label for="edit-member-phone" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-phone text-gray-400 mr-1"></i>
-                    电话
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    最后登录时间
                   </label>
-                  <input
-                    id="edit-member-phone"
-                    v-model="editMemberForm.phone"
-                    type="tel"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                    placeholder="请输入电话号码"
-                  />
+                  <div class="px-3 py-2 border border-gray-300 bg-gray-50 rounded-md text-gray-600 text-sm">
+                    {{ formatDateTime(editMemberForm.last_login_time) || '从未登录' }}
+                  </div>
                 </div>
 
-                <!-- 邮箱 -->
-                <div class="md:col-span-2">
-                  <label for="edit-member-email" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-envelope text-gray-400 mr-1"></i>
-                    邮箱
-                  </label>
-                  <input
-                    id="edit-member-email"
-                    v-model="editMemberForm.email"
-                    type="email"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                    placeholder="请输入邮箱地址"
-                  />
-                </div>
-
-                <!-- 状态 -->
                 <div>
-                  <label for="edit-member-status" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-toggle-on text-gray-400 mr-1"></i>
-                    状态
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                    账号创建时间
                   </label>
-                  <select
-                    id="edit-member-status"
-                    v-model="editMemberForm.account_status"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                  >
-                    <option value="NORMAL">正常</option>
-                    <option value="STOPPED">停用</option>
-                    <option value="INVITING">邀请中</option>
-                    <option value="INVITE_FAILED">邀请失败</option>
-                  </select>
-                </div>
-
-                <!-- 角色 -->
-                <div>
-                  <label for="edit-member-role" class="block text-sm font-medium text-gray-700 mb-1">
-                    <i class="fas fa-user-tag text-gray-400 mr-1"></i>
-                    角色
-                  </label>
-                  <select
-                    id="edit-member-role"
-                    v-model="editMemberForm.role"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                  >
-                    <option :value="0">管理员</option>
-                    <option :value="1">成员</option>
-                  </select>
+                  <div class="px-3 py-2 border border-gray-300 bg-gray-50 rounded-md text-gray-600 text-sm">
+                    {{ formatDate(editMemberForm.create_time) || '未知' }}
+                  </div>
                 </div>
               </div>
 
               <!-- 操作按钮 -->
-              <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  @click="closeEditMemberModal"
-                  type="button"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                <!-- 修改密码按钮 -->
+                <button 
+                  @click="openChangePasswordModal"
+                  class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-md hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-medium flex items-center text-sm"
                 >
-                  取消
+                  <i class="fas fa-key mr-2"></i>
+                  修改密码
                 </button>
-                <button
-                  @click="saveEditMember"
-                  :disabled="editMemberLoading"
-                  type="button"
-                  class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 border border-transparent rounded-md shadow-sm hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  <i v-if="editMemberLoading" class="fas fa-spinner fa-spin mr-2"></i>
-                  <i v-else class="fas fa-save mr-2"></i>
-                  {{ editMemberLoading ? '保存中...' : '保存' }}
-                </button>
+                
+                <!-- 右侧按钮组 -->
+                <div class="flex space-x-3">
+                  <button
+                    @click="closeEditMemberModal"
+                    type="button"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
+                  >
+                    取消
+                  </button>
+                  <button
+                    @click="saveEditMember"
+                    :disabled="editMemberLoading"
+                    type="button"
+                    class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 border border-transparent rounded-md shadow-sm hover:from-purple-600 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    <i v-if="editMemberLoading" class="fas fa-spinner fa-spin mr-2"></i>
+                    <i v-else class="fas fa-save mr-2"></i>
+                    {{ editMemberLoading ? '保存中...' : '保存' }}
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- 操作日志标签页 -->
-            <div v-if="editMemberActiveTab === 'logs'" class="space-y-4">
-              <!-- 日志筛选 -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">时间范围</label>
-                    <select v-model="memberLogFilter.timeRange" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <!-- 操作日志标签页 -->
+            <div v-if="editMemberActiveTab === 'logs'" class="space-y-5">
+              <!-- 日志顶部工具栏 -->
+              <div class="flex justify-between items-center">
+                <h4 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-history text-purple-600"></i>
+                  </div>
+                  操作记录
+                </h4>
+                <button 
+                  @click="editMemberActiveTab = 'basic'"
+                  class="px-4 py-2 bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 rounded-lg hover:from-purple-200 hover:to-purple-300 transition-all duration-200 flex items-center font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                  title="返回基本信息"
+                >
+                  <i class="fas fa-arrow-left mr-2"></i>
+                  返回
+                </button>
+              </div>
+
+              <!-- 日志筛选区域 -->
+              <div class="bg-gradient-to-r from-purple-50/50 to-blue-50/50 p-3 rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <!-- 时间范围筛选 -->
+                  <div class="flex items-center space-x-2">
+                    <label class="text-xs font-medium text-gray-600 flex items-center">
+                      <i class="fas fa-calendar text-orange-500 mr-1"></i>
+                      时间范围
+                    </label>
+                    <select 
+                      v-model="memberLogFilter.timeRange" 
+                      class="w-40 px-3 py-2 bg-white border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-400 transition-all duration-200"
+                    >
                       <option value="">全部时间</option>
                       <option value="today">今天</option>
                       <option value="week">最近一周</option>
                       <option value="month">最近一月</option>
                     </select>
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">操作类型</label>
-                    <select v-model="memberLogFilter.operationType" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  
+                  <!-- 操作类型筛选 -->
+                  <div class="flex items-center space-x-2">
+                    <label class="text-xs font-medium text-gray-600 flex items-center">
+                      <i class="fas fa-tags text-green-500 mr-1"></i>
+                      操作类型
+                    </label>
+                    <select 
+                      v-model="memberLogFilter.operationType" 
+                      class="w-40 px-3 py-2 bg-white border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-400 transition-all duration-200"
+                    >
                       <option value="">全部类型</option>
                       <option value="UPDATE">信息修改</option>
                       <option value="STATUS_CHANGE">状态变更</option>
                       <option value="ROLE_CHANGE">角色变更</option>
                     </select>
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">关键字</label>
-                    <input
-                      v-model="memberLogFilter.keyword"
-                      type="text"
-                      placeholder="搜索操作描述..."
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                  
+                  <!-- 关键字搜索 -->
+                  <div class="flex items-center space-x-2">
+                    <label class="text-xs font-medium text-gray-600 flex items-center">
+                      <i class="fas fa-search text-blue-500 mr-1"></i>
+                      关键字
+                    </label>
+                    <div class="relative">
+                      <input
+                        v-model="memberLogFilter.keyword"
+                        type="text"
+                        placeholder="搜索操作描述..."
+                        class="w-50 pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-400 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                      />
+                      <i class="fas fa-search absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- 日志列表 -->
-              <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <div class="max-h-96 overflow-y-auto">
-                  <div v-if="memberLogs.length === 0" class="p-8 text-center text-gray-500">
-                    <i class="fas fa-history text-3xl text-gray-300 mb-3"></i>
-                    <p>暂无操作日志</p>
+              <!-- 日志列表容器 -->
+              <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200">
+                  <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                    <i class="fas fa-list mr-2 text-gray-600"></i>
+                    操作日志列表
+                  </h6>
+                </div>
+                <div class="max-h-[300px] overflow-y-auto">
+                  <div v-if="memberLogs.length === 0" class="p-12 text-center text-gray-500">
+                    <!-- 空状态显示 -->
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <i class="fas fa-clock text-2xl text-purple-400"></i>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-600 mb-1">暂无操作日志</p>
+                    <p class="text-xs text-gray-400">用户的操作记录将在此处显示</p>
                   </div>
-                  <div v-else class="divide-y divide-gray-200">
+                  <div v-else class="divide-y divide-gray-100">
                     <div
                       v-for="log in filteredMemberLogs"
                       :key="log.id"
-                      class="p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                      class="p-3 hover:bg-purple-50/30 transition-all duration-200 cursor-pointer border-l-4 border-transparent hover:border-purple-400"
                       @click="toggleLogDetail(log.id)"
                     >
                       <div class="flex items-start justify-between">
                         <div class="flex-1">
-                          <div class="flex items-center space-x-2 mb-1">
-                            <span class="text-sm font-medium text-gray-900">{{ formatLogTime(log.created_at) }}</span>
-                            <span :class="getLogTypeClass(log.operation_type)" class="px-2 py-1 text-xs font-medium rounded-full">
+                          <div class="flex items-center space-x-3 mb-2">
+                            <span class="text-sm font-bold text-gray-800">{{ formatLogTime(log.created_at) }}</span>
+                            <span :class="getLogTypeClass(log.operation_type)" class="px-2 py-1 text-xs font-semibold rounded-full shadow-sm">
                               {{ getLogTypeText(log.operation_type) }}
                             </span>
                           </div>
-                          <p class="text-sm text-gray-600 mb-1">{{ log.description }}</p>
-                          <p class="text-xs text-gray-400">
-                            操作人：{{ log.operator_name || '系统' }} | IP：{{ log.ip_address || '未知' }}
+                          <p class="text-sm text-gray-700 mb-2 font-medium leading-relaxed">{{ log.description }}</p>
+                          <p class="text-xs text-gray-500 flex items-center space-x-4">
+                            <span class="flex items-center">
+                              <i class="fas fa-user mr-1 text-purple-500"></i>
+                            操作人：{{ log.operator_name || '系统' }}
+                            </span>
+                            <span class="flex items-center">
+                              <i class="fas fa-globe mr-1 text-blue-500"></i>
+                              IP：{{ log.ip_address || '未知' }}
+                            </span>
                           </p>
                         </div>
-                        <button class="text-gray-400 hover:text-gray-600 ml-2">
-                          <i :class="expandedLogs.includes(log.id) ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                        <button class="text-gray-400 hover:text-purple-600 ml-4 p-2 rounded-lg hover:bg-purple-50 transition-all duration-200 transform hover:scale-105">
+                          <i :class="['transition-transform duration-200', expandedLogs.includes(log.id) ? 'fas fa-chevron-up' : 'fas fa-chevron-down']"></i>
                         </button>
                       </div>
                       
                       <!-- 详细变更信息 -->
-                      <div v-if="expandedLogs.includes(log.id)" class="mt-3 pt-3 border-t border-gray-100">
+                      <div v-if="expandedLogs.includes(log.id)" class="mt-3 pt-3 border-t border-purple-100 animate-fadeIn">
                         <div v-if="log.changes && log.changes.length > 0" class="space-y-2">
-                          <h4 class="text-xs font-medium text-gray-700 mb-2">变更详情：</h4>
-                          <div v-for="change in log.changes" :key="change.field" class="bg-gray-50 p-2 rounded text-xs">
-                            <div class="font-medium text-gray-700">{{ change.field_name }}：</div>
-                            <div class="flex items-center space-x-2 mt-1">
-                              <span class="text-red-600 bg-red-50 px-2 py-1 rounded">{{ change.old_value || '空' }}</span>
-                              <i class="fas fa-arrow-right text-gray-400"></i>
-                              <span class="text-green-600 bg-green-50 px-2 py-1 rounded">{{ change.new_value || '空' }}</span>
+                          <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-exchange-alt mr-2 text-purple-600"></i>
+                            变更详情：
+                          </h4>
+                          <div v-for="change in log.changes" :key="change.field" class="bg-purple-50/30 p-3 rounded-lg text-xs border border-purple-100">
+                            <div class="font-semibold text-gray-700 mb-1">{{ change.field_name }}：</div>
+                            <div class="flex items-center space-x-2 mt-1 flex-wrap">
+                              <span class="text-red-700 bg-red-100 px-2 py-1 rounded-lg font-medium border border-red-200">
+                                {{ change.old_value || '空' }}
+                              </span>
+                              <i class="fas fa-arrow-right text-purple-400"></i>
+                              <span class="text-green-700 bg-green-100 px-2 py-1 rounded-lg font-medium border border-green-200">
+                                {{ change.new_value || '空' }}
+                              </span>
                             </div>
                           </div>
                         </div>
-                        <div v-else class="text-xs text-gray-500">
+                        <div v-else class="text-xs text-gray-500 bg-purple-50/20 p-3 rounded-lg text-center border border-purple-100">
+                          <i class="fas fa-info-circle mr-1 text-purple-400"></i>
                           无详细变更信息
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+              
+              <!-- 底部操作区域 -->
+              <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                <!-- 左侧占位区域 -->
+                <div class="flex-1">
+                  <!-- 空白区域，保持与基本信息页面的布局一致 -->
+                </div>
+                
+                <!-- 右侧按钮区域 -->
+                <div class="flex space-x-3">
+                  <button
+                    @click="showEditMemberModal = false"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
+                  >
+                    关闭
+                  </button>
                 </div>
               </div>
             </div>
@@ -602,60 +757,65 @@
         </div>
 
         <!-- 统计卡片 - 仅管理员可查看 -->
-        <div v-if="isSuperUser" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 hover:shadow-lg h-32 flex flex-col justify-between cursor-pointer">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-sm font-medium text-gray-600">子账户总数</h3>
-              <span class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
-                <i class="fas fa-users text-sm" />
+        <div v-if="isSuperUser" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+          <!-- 子账户总数卡片 -->
+          <div class="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:transform hover:-translate-y-0.5 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-3 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors">
+                <i class="fas fa-users text-2xl text-blue-600"></i>
+              </div>
+              <span class="text-xs font-medium text-white bg-green-600 px-2 py-1 rounded" style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                +12%
               </span>
             </div>
-            <div class="flex-1 flex flex-col justify-center">
-              <p class="text-2xl font-bold text-gray-800 mb-2">{{ subAccountsCount }}</p>
-            </div>
-            <p class="text-xs bg-green-50 text-gray-700 px-2 py-1 rounded flex items-center">
-              <i class="fas fa-arrow-up mr-1 text-green-600" /> 较上月增长12%
-            </p>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">子账户总数</h3>
+            <p class="text-xl font-bold text-gray-900 mb-2">{{ subAccountsCount }}</p>
+            <p class="text-xs text-gray-500">相比上月增长</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 hover:shadow-lg h-32 flex flex-col justify-between cursor-pointer">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-sm font-medium text-gray-600">今日活跃</h3>
-              <span class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
-                <i class="fas fa-user-check text-sm" />
+          
+          <!-- 今日活跃卡片 -->
+          <div class="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:transform hover:-translate-y-0.5 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-3 bg-purple-50 rounded-xl group-hover:bg-purple-100 transition-colors">
+                <i class="fas fa-user-check text-2xl text-purple-600"></i>
+              </div>
+              <span class="text-xs font-medium text-white bg-green-600 px-2 py-1 rounded" style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                +0%
               </span>
             </div>
-            <div class="flex-1 flex flex-col justify-center">
-              <p class="text-2xl font-bold text-gray-800 mb-2">{{ todayActiveSubAccountsCount }}</p>
-            </div>
-            <p class="text-xs text-gray-600">活跃率: <span class="text-green-600 font-semibold">{{ activePercentage }}%</span></p>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">今日活跃</h3>
+            <p class="text-xl font-bold text-gray-900 mb-2">{{ todayActiveSubAccountsCount }}</p>
+            <p class="text-xs text-gray-500">活跃率: {{ activePercentage }}%</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 hover:shadow-lg h-32 flex flex-col justify-between cursor-pointer">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-sm font-medium text-gray-600">已禁用账户</h3>
-              <span class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
-                <i class="fas fa-user-times text-sm" />
+          
+          <!-- 已禁用账户卡片 -->
+          <div class="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:transform hover:-translate-y-0.5 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-3 bg-red-50 rounded-xl group-hover:bg-red-100 transition-colors">
+                <i class="fas fa-user-times text-2xl text-red-600"></i>
+              </div>
+              <span class="text-xs font-medium text-white bg-red-600 px-2 py-1 rounded" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                -8%
               </span>
             </div>
-            <div class="flex-1 flex flex-col justify-center">
-              <p class="text-2xl font-bold text-gray-800 mb-2">{{ stoppedSubAccountsCount }}</p>
-            </div>
-            <p class="text-xs bg-red-50 text-gray-700 px-2 py-1 rounded flex items-center">
-              <i class="fas fa-arrow-down mr-1 text-red-600" /> 较上月减少8%
-            </p>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">已禁用账户</h3>
+            <p class="text-xl font-bold text-gray-900 mb-2">{{ stoppedSubAccountsCount }}</p>
+            <p class="text-xs text-gray-500">相比上月减少</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 hover:shadow-lg h-32 flex flex-col justify-between cursor-pointer">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-sm font-medium text-gray-600">待处理邀请</h3>
-              <span class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
-                <i class="fas fa-user-clock text-sm" />
+          
+          <!-- 待处理邀请卡片 -->
+          <div class="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:transform hover:-translate-y-0.5 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-3 bg-orange-50 rounded-xl group-hover:bg-orange-100 transition-colors">
+                <i class="fas fa-user-clock text-2xl text-orange-600"></i>
+              </div>
+              <span class="text-xs font-medium text-white bg-orange-600 px-2 py-1 rounded" style="background: #f97316; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                待确认
               </span>
             </div>
-            <div class="flex-1 flex flex-col justify-center">
-              <p class="text-2xl font-bold text-gray-800 mb-2">{{ invitingSubAccountsCount }}</p>
-            </div>
-            <p class="text-xs bg-orange-50 text-gray-700 px-2 py-1 rounded flex items-center">
-              <i class="fas fa-clock mr-1" /> 等待确认
-            </p>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">待处理邀请</h3>
+            <p class="text-xl font-bold text-gray-900 mb-2">{{ invitingSubAccountsCount }}</p>
+            <p class="text-xs text-gray-500">等待用户确认</p>
           </div>
         </div>
 
@@ -753,8 +913,8 @@
                       <span class="flex items-center">
                         待处理
                         <span v-if="getInviteCountdown(user) > 0" class="ml-1 text-xs">
-                          ({{ getInviteCountdown(user) }}天)
-                        </span>
+                  ({{ Math.ceil(getInviteCountdown(user)) }}天)
+                </span>
                         <span v-else-if="getInviteCountdown(user) === 0" class="ml-1 text-xs">
                           (已过期)
                         </span>
@@ -779,37 +939,32 @@
                     </span>
                   </td>
                   <td class="px-3 py-1.5 text-right text-xs font-medium">
-                    <div class="flex items-center justify-end space-x-1">
-                      <!-- Edit Member Button - 管理员可以编辑所有用户的完整信息 -->
-                      <button v-if="isSuperUser" @click="editMember(user)" class="text-gray-500 hover:text-blue-600 transform hover:scale-110 transition-all duration-300 p-1 rounded hover:bg-gray-100" title="编辑成员信息">
-                        <i class="fas fa-user-edit" />
+                    <div class="flex items-center justify-end space-x-2">
+                      <!-- 编辑按钮 - 管理员可以编辑其他用户 -->
+                      <button v-if="isSuperUser && user.id !== currentUser?.id" @click="editMember(user)" class="px-3 py-1.5 text-xs bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium">
+                        <i class="fas fa-edit mr-1"></i>
+                        编辑
                       </button>
                       
-                      <!-- Edit Username Button - 所有用户都可以编辑自己的用户名 -->
-                      <button v-if="String(user.id) === String(currentUser?.id)" @click="editUserName(user)" class="text-gray-500 hover:text-blue-600 transform hover:scale-110 transition-all duration-300 p-1 rounded hover:bg-gray-100" title="编辑用户名">
-                        <i class="fas fa-edit" />
+                      <!-- 编辑用户名按钮 - 用于编辑自己的用户名 -->
+                      <button v-if="user.id === currentUser?.id" @click="editUserName(user)" class="px-3 py-1.5 text-xs border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium">
+                        <i class="fas fa-user-edit mr-1"></i>
+                        编辑用户名
+                      </button>
+                        
+                      <!-- Status Action Buttons - 只有管理员可以操作其他用户的状态 -->
+                      <!-- Enable/Disable Button -->
+                      <button v-if="isSuperUser && String(user.id) !== String(currentUser?.id) && user.accountStatus === 'NORMAL'" @click="updateUserAccountStatus(user, 'STOPPED')" class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200" title="禁用账户">
+                        <i class="fas fa-ban" />
+                      </button>
+                      <button v-if="isSuperUser && String(user.id) !== String(currentUser?.id) && user.accountStatus === 'STOPPED'" @click="updateUserAccountStatus(user, 'NORMAL')" class="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200" title="启用账户">
+                        <i class="fas fa-check-circle" />
                       </button>
                       
-                      <!-- Status Action Buttons - Only visible to supervisors and cannot operate on themselves -->
-                      <template v-if="isSuperUser && user.id !== currentUser?.id">
-                        <!-- Edit Button -->
-                        <button @click="editMember(user)" class="text-gray-500 hover:text-blue-600 transform hover:scale-110 transition-all duration-300 p-1 rounded hover:bg-gray-100" title="编辑成员">
-                          <i class="fas fa-edit" />
-                        </button>
-                        
-                        <!-- Enable/Disable Button -->
-                        <button v-if="user.accountStatus === 'NORMAL'" @click="updateUserAccountStatus(user, 'STOPPED')" class="text-gray-500 hover:text-red-600 transform hover:scale-110 transition-all duration-300 p-1 rounded hover:bg-gray-100" title="禁用账户">
-                          <i class="fas fa-ban" />
-                        </button>
-                        <button v-else-if="user.accountStatus === 'STOPPED'" @click="updateUserAccountStatus(user, 'NORMAL')" class="text-gray-500 hover:text-green-600 transform hover:scale-110 transition-all duration-300 p-1 rounded hover:bg-gray-100" title="启用账户">
-                          <i class="fas fa-check-circle" />
-                        </button>
-                        
-                        <!-- Resend Invitation Button - Only shown when invitation failed or expired -->
-                        <button v-if="user.accountStatus === 'INVITE_FAILED' || (isInviteExpired(user) && !user.lastLoginTime)" @click="resendInvite(user)" class="text-gray-500 hover:text-yellow-600 transform hover:scale-110 transition-all duration-300 p-1 rounded hover:bg-gray-100" title="重新发送邀请">
-                          <i class="fas fa-paper-plane" />
-                        </button>
-                      </template>
+                      <!-- Resend Invitation Button - 只有管理员可以重新发送邀请 -->
+                      <button v-if="isSuperUser && String(user.id) !== String(currentUser?.id) && (user.accountStatus === 'INVITE_FAILED' || (isInviteExpired(user) && !user.lastLoginTime))" @click="resendInvite(user)" class="p-2 text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-all duration-200" title="重新发送邀请">
+                        <i class="fas fa-paper-plane" />
+                      </button>
                       
                       <!-- More Actions Button - 所有用户都可以看到更多操作菜单 -->
                       <div class="relative user-menu-container">
@@ -819,25 +974,30 @@
                         
                         <!-- Dropdown Menu -->
                         <div v-if="showUserMenu === user.id" class="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                          <div class="py-1">
+                          <div class="py-2 space-y-1">
                             <!-- 查看详情 - 所有用户都可以查看自己的详情，管理员可以查看所有用户 -->
-                            <button v-if="user.id === currentUser?.id || isSuperUser" @click="viewUserDetails(user)" class="block w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                              <i class="fas fa-eye mr-2" />查看详情
+                            <button v-if="user.id === currentUser?.id || isSuperUser" @click="viewUserDetails(user)" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-md transition-all duration-200 group">
+                              <i class="fas fa-eye mr-3 text-blue-500 group-hover:text-blue-600" />
+                              <span class="font-medium">查看详情</span>
                             </button>
                             <!-- 修改密码 - 所有用户都可以修改自己的密码，管理员可以修改所有用户密码 -->
-                            <button v-if="user.id === currentUser?.id || isSuperUser" @click="changePassword(user)" class="block w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                              <i class="fas fa-key mr-2" />修改密码
+                            <button v-if="user.id === currentUser?.id || isSuperUser" @click="changePassword(user)" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-md transition-all duration-200 group">
+                              <i class="fas fa-key mr-3 text-purple-500 group-hover:text-purple-600" />
+                              <span class="font-medium">修改密码</span>
                             </button>
                             <!-- 管理员专用操作 -->
-                            <div v-if="isSuperUser && user.id !== currentUser?.id" class="border-t border-gray-200 my-1"></div>
-                            <button v-if="isSuperUser && user.id !== currentUser?.id && user.accountStatus !== 'STOPPED'" @click="disableUser(user)" class="block w-full text-left px-3 py-2 text-xs text-yellow-600 hover:bg-gray-50 hover:text-yellow-700">
-                              <i class="fas fa-ban mr-2" />停用账户
+                            <div v-if="isSuperUser && user.id !== currentUser?.id" class="border-t border-gray-200 my-2"></div>
+                            <button v-if="isSuperUser && user.id !== currentUser?.id && user.accountStatus !== 'STOPPED'" @click="disableUser(user)" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 rounded-md transition-all duration-200 group">
+                              <i class="fas fa-ban mr-3 text-yellow-500 group-hover:text-yellow-600" />
+                              <span class="font-medium">停用账户</span>
                             </button>
-                            <button v-if="isSuperUser && user.id !== currentUser?.id && user.accountStatus === 'STOPPED'" @click="enableUser(user)" class="block w-full text-left px-3 py-2 text-xs text-green-600 hover:bg-gray-50 hover:text-green-700">
-                              <i class="fas fa-check-circle mr-2" />启用账户
+                            <button v-if="isSuperUser && user.id !== currentUser?.id && user.accountStatus === 'STOPPED'" @click="enableUser(user)" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-md transition-all duration-200 group">
+                              <i class="fas fa-check-circle mr-3 text-green-500 group-hover:text-green-600" />
+                              <span class="font-medium">启用账户</span>
                             </button>
-                            <button v-if="isSuperUser && user.role !== 0 && user.id !== currentUser?.id" @click="removeUser(user)" class="block w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-gray-50 hover:text-red-700">
-                              <i class="fas fa-trash mr-2" />删除用户
+                            <button v-if="isSuperUser && user.role !== 0 && user.id !== currentUser?.id" @click="removeUser(user)" class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 rounded-md transition-all duration-200 group">
+                              <i class="fas fa-trash mr-3 text-red-500 group-hover:text-red-600" />
+                              <span class="font-medium">删除用户</span>
                             </button>
                           </div>
                         </div>
@@ -958,17 +1118,26 @@
     
     <!-- User Details Modal -->
     <UserDetailsModal :show="showUserDetailsModal" :user="selectedUser" :userLogs="userLogs" :currentPage="userLogsPage" :pageSize="userLogsPageSize" :totalItems="userLogsTotal" :totalPages="userLogsTotalPages" :searchParams="userLogsSearch" @close="closeUserDetailsModal" @userUpdated="handleUserUpdated" @search="searchUserLogs" @resetSearch="resetUserLogsSearch" @pageChange="changeUserLogsPage" @pageSizeChange="changeUserLogsPageSize" />
+    
+    <!-- Change Password Modal -->
+    <ChangePasswordModal 
+      :show="showChangePasswordModal" 
+      :userId="changePasswordUserId" 
+      @close="closeChangePasswordModal" 
+      @success="handlePasswordChangeSuccess" 
+    />
   </div>
 </template>
 
 <script>
-import { getCurrentUser, logout as logoutUser } from '../utils/auth.js';
+import { getCurrentUser, logout as logoutUser, getAuthInfo } from '../utils/auth.js';
 import { userAPI } from '../utils/api.js';
 import { showSuccess, showError } from '../utils/notification.js';
 import CommonSidebar from './CommonSidebar.vue';
 import CommonHeader from './CommonHeader.vue';
 import CustomConfirmModal from './CustomConfirmModal.vue';
 import UserDetailsModal from './UserDetailsModal.vue';
+import ChangePasswordModal from './ChangePasswordModal.vue';
 
 export default {
   name: 'UserManagement',
@@ -976,7 +1145,8 @@ export default {
     CommonSidebar,
     CommonHeader,
     CustomConfirmModal,
-    UserDetailsModal
+    UserDetailsModal,
+    ChangePasswordModal
   },
   data() {
       return {
@@ -1040,10 +1210,24 @@ export default {
           phone: '',
           email: '',
           account_status: 'NORMAL',
-          role: 1
+          role: 1,
+          avatar_url: '',
+          last_login_time: '',
+          create_time: ''
         },
         editMemberFormErrors: [],
         editMemberLoading: false,
+        avatarUploading: false,
+        
+        // 密码修改相关数据
+        showPasswordPanel: false,
+        passwordForm: {
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        },
+        passwordFormErrors: [],
+        passwordLoading: false,
 
         // 成员日志相关数据
         memberLogs: [],
@@ -1053,9 +1237,11 @@ export default {
           keyword: ''
         },
         expandedLogs: [], // 展开的日志ID列表
-        // Change password modal
+        
+        // 修改密码相关数据
         showChangePasswordModal: false,
-        changePasswordMethod: 'original', // 'original' or 'email'
+        changePasswordUserId: null,
+        changePasswordMethod: 'original', // 'original' 或 'email'
         changePasswordForm: {
           userId: null,
           currentPassword: '',
@@ -1212,9 +1398,6 @@ export default {
     this.currentUser = getCurrentUser();
     this.isSuperUser = this.currentUser && this.currentUser.role === 0;
     
-    console.log('当前用户信息:', this.currentUser);
-    console.log('是否为超级用户:', this.isSuperUser);
-    
     // Check if logged in
     if (!this.currentUser) {
       showError('请先登录', '未登录');
@@ -1251,6 +1434,166 @@ export default {
         logoutUser();
       },
       
+      // 处理头像上传
+      handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // 验证文件类型和大小
+        const validTypes = ['image/jpeg', 'image/png'];
+        if (!validTypes.includes(file.type)) {
+          this.editMemberFormErrors.push('头像必须是JPG或PNG格式');
+          return;
+        }
+        
+        if (file.size > 2 * 1024 * 1024) { // 2MB
+          this.editMemberFormErrors.push('头像大小不能超过2MB');
+          return;
+        }
+        
+        // 显示上传中状态
+        this.avatarUploading = true;
+        
+        // 使用FormData上传文件
+        const formData = new FormData();
+        formData.append('avatar', file);
+        formData.append('user_id', this.editMemberForm.id);
+        
+        // 模拟上传过程
+        setTimeout(() => {
+          // 在实际应用中，这里应该调用后端API上传头像
+          // 上传成功后更新avatar_url
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.editMemberForm.avatar_url = e.target.result;
+          };
+          reader.readAsDataURL(file);
+          
+          this.avatarUploading = false;
+          this.showNotification('头像上传成功', 'success');
+        }, 1000);
+      },
+      
+      // 验证手机号格式
+      validatePhoneNumber(phone) {
+        const phoneRegex = /^1[3-9]\d{9}$/;
+        return phoneRegex.test(phone);
+      },
+      
+      // 格式化日期时间
+      formatDateTime(dateTime) {
+        if (!dateTime) return '--';
+        const date = new Date(dateTime);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      },
+      
+      // 格式化日期（不含时间）
+      formatDate(dateTime) {
+        if (!dateTime) return '--';
+        const date = new Date(dateTime);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      },
+      
+      // 切换密码面板显示/隐藏
+      togglePasswordPanel() {
+        this.showPasswordPanel = !this.showPasswordPanel;
+      },
+      
+      // 验证密码复杂度
+      validatePassword(password) {
+        if (!password) return false;
+        
+        // 密码必须至少8位，包含大小写字母、数字和特殊字符
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
+        const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        const isValidLength = password.length >= 8;
+        
+        return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars && isValidLength;
+      },
+      
+      // 处理密码修改
+      async handleChangePassword() {
+        this.passwordFormErrors = [];
+        
+        // 验证当前密码
+        if (!this.passwordForm.currentPassword) {
+          this.passwordFormErrors.push('请输入当前密码');
+        }
+        
+        // 验证新密码
+        if (!this.passwordForm.newPassword) {
+          this.passwordFormErrors.push('请输入新密码');
+        } else if (!this.validatePassword(this.passwordForm.newPassword)) {
+          this.passwordFormErrors.push('新密码必须至少8位，包含大小写字母、数字和特殊字符');
+        }
+        
+        // 验证确认密码
+        if (!this.passwordForm.confirmPassword) {
+          this.passwordFormErrors.push('请确认新密码');
+        } else if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+          this.passwordFormErrors.push('两次输入的密码不一致');
+        }
+        
+        if (this.passwordFormErrors.length > 0) {
+          return;
+        }
+        
+        this.passwordLoading = true;
+        
+        try {
+          // 模拟API调用
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // 密码修改成功
+          this.showNotification('密码已更新，请重新登录', 'success');
+          
+          // 重置密码表单
+          this.passwordForm = {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          };
+          
+          // 隐藏密码面板
+          this.showPasswordPanel = false;
+          
+          // 延迟后登出用户（实际应用中可能需要）
+          // setTimeout(() => {
+          //   this.logout();
+          // }, 2000);
+          
+        } catch (error) {
+          this.passwordFormErrors.push('密码修改失败，请稍后重试');
+        } finally {
+          this.passwordLoading = false;
+        }
+      },
+      
+      // 显示通知
+      showNotification(message, type = 'info') {
+        this.notifications.push({
+          id: Date.now(),
+          message,
+          type
+        });
+        
+        // 3秒后自动移除通知
+        setTimeout(() => {
+          this.notifications = this.notifications.filter(n => n.id !== Date.now());
+        }, 3000);
+      },
+      
       // Check if it's a recent login (within 24 hours)
       isRecentLogin(loginTime) {
         if (!loginTime) return false;
@@ -1260,14 +1603,24 @@ export default {
         return diffHours < 24;
       },
       
-      // Calculate invite countdown (14 days from creation)
+      // Calculate invite countdown (14 days from invitation creation)
       getInviteCountdown(user) {
-        if (!user.createTime) return 14; // 如果没有创建时间，默认14天
+        // 对于邀请状态的用户，使用邀请创建时间
+        const inviteTime = user.inviteCreateTime || user.createTime;
+        if (!inviteTime) return 14; // 如果没有邀请时间，默认14天
+        
         const now = new Date();
-        const createDate = new Date(user.createTime);
-        const diffMs = now - createDate;
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const inviteDate = new Date(inviteTime);
+        
+        // 计算精确的时间差（毫秒）
+        const diffMs = now - inviteDate;
+        // 转换为天数
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        
+        // 计算剩余天数
         const remainingDays = 14 - diffDays;
+        
+        // 确保不小于0
         return Math.max(0, remainingDays);
       },
       
@@ -1302,36 +1655,74 @@ export default {
         this.isLoading = true;
         console.log('开始加载用户列表...');
         
-        const response = await userAPI.getUsers();
-        console.log('用户API响应:', response);
+        // 使用组件中已有的currentUser，而不是重新获取
+        const currentUser = this.currentUser;
         
-        // 确保正确提取用户数组
-        if (response && Array.isArray(response.users)) {
-          this.users = response.users;
-          console.log('成功加载用户列表:', this.users.length, '个用户');
-        } else if (Array.isArray(response)) {
-          // 如果直接返回数组
-          this.users = response;
-          console.log('成功加载用户列表（直接数组）:', this.users.length, '个用户');
-        } else {
-          console.warn('用户API返回格式异常:', response);
-          this.users = [];
+        try {
+          // 尝试获取完整用户列表（主账号权限）
+          const response = await userAPI.getUsers();
+          console.log('用户API响应:', response);
+          
+          // 确保正确提取用户数组 - 后端返回格式是 {total, page, size, users}
+          if (response && response.users && Array.isArray(response.users)) {
+            this.users = response.users;
+            console.log('成功加载用户列表:', this.users.length, '个用户');
+          } else if (Array.isArray(response)) {
+            // 如果直接返回数组
+            this.users = response;
+            console.log('成功加载用户列表（直接数组）:', this.users.length, '个用户');
+          } else {
+            console.warn('用户API返回格式异常:', response);
+            // 即使返回格式异常，如果是子账号，也要显示自己
+            if (currentUser) {
+              this.users = [currentUser];
+            } else {
+              this.users = [];
+            }
+          }
+        } catch (apiError) {
+          console.error('获取用户列表失败，尝试使用备用方案:', apiError);
+          
+          // 处理403权限错误 - 对于子账号，只显示自己的信息
+          if (apiError.message.includes('403') || apiError.message.includes('无权限') || apiError.message.includes('权限不足')) {
+            if (currentUser) {
+              this.users = [currentUser];
+              console.log('当前用户无权限查看完整列表，仅显示自己');
+              // 显示提示信息
+              this.showNotification('您当前权限只能查看自己的信息', 'warning');
+            } else {
+              this.users = [];
+              console.error('权限错误且无法获取当前用户信息');
+            }
+          } else {
+            // 其他错误，设置为空数组
+            this.users = [];
+          }
         }
         
         this.filterUsers();
         
         // 检查当前用户是否在列表中
-        const currentUserId = this.currentUser?.id;
+        const currentUserId = currentUser?.id;
         const currentUserInList = this.users.find(user => user.id === currentUserId);
         console.log('当前用户ID:', currentUserId);
         console.log('当前用户是否在列表中:', currentUserInList ? '是' : '否');
         
         if (!currentUserInList && currentUserId) {
           console.warn('当前用户不在用户列表中，可能存在数据同步问题');
+          // 如果是子账号，确保显示自己
+          if (currentUser && !this.users.find(u => u.id === currentUserId)) {
+            this.users = [currentUser];
+            this.filterUsers();
+          }
         }
         
       } catch (error) {
         console.error('加载用户列表失败:', error);
+        
+        // 设置空数组以避免显示问题
+        this.users = [];
+        this.filterUsers();
         
         // 如果是认证错误，不显示错误提示（已经跳转到登录页面）
         if (!error.message.includes('认证') && !error.message.includes('登录')) {
@@ -1777,8 +2168,11 @@ export default {
       this.editMemberForm.username = user.username || user.name || '';
       this.editMemberForm.phone = user.phone || '';
       this.editMemberForm.email = user.email || '';
-      this.editMemberForm.account_status = user.account_status || 'NORMAL';
+      this.editMemberForm.account_status = user.accountStatus || 'NORMAL'; // 修复：使用accountStatus而不是account_status
       this.editMemberForm.role = user.role || 1;
+      this.editMemberForm.avatar_url = user.avatar || ''; // 修复：使用avatar而不是avatar_url
+      this.editMemberForm.last_login_time = user.lastLoginTime || ''; // 修复：使用lastLoginTime而不是last_login_time
+      this.editMemberForm.create_time = user.createdTime || ''; // 修复：使用createdTime而不是create_time
       this.editMemberFormErrors = [];
       this.editMemberActiveTab = 'basic';
       this.showEditMemberModal = true;
@@ -1821,7 +2215,7 @@ export default {
         this.editMemberFormErrors.push('请输入有效的邮箱地址');
       }
       
-      if (this.editMemberForm.phone && !this.isValidPhone(this.editMemberForm.phone)) {
+      if (this.editMemberForm.phone && !this.validatePhoneNumber(this.editMemberForm.phone)) {
         this.editMemberFormErrors.push('请输入有效的手机号码');
       }
       
@@ -1837,10 +2231,9 @@ export default {
         
         const updateData = {
           username: this.editMemberForm.username.trim(),
-          phone: this.editMemberForm.phone.trim(),
+          phone: this.editMemberForm.phone.trim(), // 修复：phone字段应该映射到phone，而不是account
           email: this.editMemberForm.email.trim(),
-          account_status: this.editMemberForm.account_status,
-          role: this.editMemberForm.role
+          avatar: this.editMemberForm.avatar_url // 添加avatar字段映射
         };
         
         await userAPI.updateUser(this.editMemberForm.id, updateData);
@@ -1848,7 +2241,7 @@ export default {
         // 记录操作日志
         await this.recordMemberLog(originalUser, updateData);
         
-        showSuccess('成员信息修改成功');
+        this.showNotification('成员信息修改成功', 'success');
         this.closeEditMemberModal();
         this.loadUsers(); // 重新加载用户列表
       } catch (error) {
@@ -1866,7 +2259,12 @@ export default {
     // 加载成员操作日志
     async loadMemberLogs(userId) {
       try {
-        const response = await userAPI.getUserLogs(userId);
+        const params = {
+          userId: userId,
+          page: 1,
+          pageSize: 50
+        };
+        const response = await userAPI.getUserLogs(params);
         this.memberLogs = response.logs || [];
       } catch (error) {
         console.error('Failed to load member logs:', error);
@@ -2230,6 +2628,39 @@ export default {
       if (!clickedInside) {
         this.showUserMenu = null;
       }
+    },
+
+    // 打开修改密码弹窗
+    openChangePasswordModal() {
+      this.changePasswordUserId = this.editMemberForm.id;
+      this.changePasswordForm.userId = this.editMemberForm.id;
+      this.changePasswordForm.currentPassword = '';
+      this.changePasswordForm.newPassword = '';
+      this.changePasswordForm.confirmNewPassword = '';
+      this.changePasswordForm.emailCode = '';
+      this.changePasswordErrors = [];
+      this.changePasswordMethod = 'original';
+      this.showChangePasswordModal = true;
+    },
+
+    // 关闭修改密码弹窗
+    closeChangePasswordModal() {
+      this.showChangePasswordModal = false;
+      this.changePasswordUserId = null;
+      this.changePasswordForm.userId = null;
+      this.changePasswordForm.currentPassword = '';
+      this.changePasswordForm.newPassword = '';
+      this.changePasswordForm.confirmNewPassword = '';
+      this.changePasswordForm.emailCode = '';
+      this.changePasswordErrors = [];
+    },
+
+    // 处理密码修改成功
+    handlePasswordChangeSuccess() {
+      showSuccess('密码修改成功');
+      this.closeChangePasswordModal();
+      // 可以选择刷新用户列表或更新用户信息
+      this.loadUsers();
     }
   }
 }
