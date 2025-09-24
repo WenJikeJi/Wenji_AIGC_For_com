@@ -1,6 +1,7 @@
 package com.wenji.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wenji.server.dto.FacebookTokenRequest;
 import com.wenji.server.dto.SocialPostRequest;
 import com.wenji.server.dto.SocialPostResponse;
 import com.wenji.server.dto.TaskRequest;
@@ -36,7 +37,7 @@ import java.util.Map;
 import java.nio.charset.StandardCharsets;
 
 @RestController
-@RequestMapping("/api/social")
+@RequestMapping("/api/social-media")
 @Tag(name = "社交媒体管理", description = "社交媒体管理相关接口")
 public class SocialMediaController {
 
@@ -348,32 +349,9 @@ public class SocialMediaController {
     })
     @PostMapping("/facebook/verify-token")
     public ResponseEntity<?> verifyFacebookToken(
-            @Parameter(description = "Facebook访问令牌、APP ID和APP密钥") @RequestBody(required = false) String rawRequestBody,
+            @Parameter(description = "Facebook访问令牌、APP ID和APP密钥") @RequestBody FacebookTokenRequest request,
             HttpServletRequest servletRequest) {
         try {
-            // 添加原始请求体调试日志
-            logger.info("收到原始请求体: {}", rawRequestBody);
-            
-            // 手动解析JSON
-            Map<String, String> requestBody = new java.util.HashMap<>();
-            if (rawRequestBody != null && !rawRequestBody.trim().isEmpty()) {
-                try {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    requestBody = objectMapper.readValue(rawRequestBody, Map.class);
-                    logger.info("成功解析请求体: {}", requestBody);
-                } catch (Exception e) {
-                    logger.error("解析请求体失败: {}", e.getMessage());
-                    return ResponseEntity.badRequest().body(
-                            Map.of("valid", false, "error", "请求体格式错误: " + e.getMessage())
-                    );
-                }
-            } else {
-                logger.warn("请求体为空");
-                return ResponseEntity.badRequest().body(
-                        Map.of("valid", false, "error", "请求体不能为空")
-                );
-            }
-            
             // 获取用户ID（可选）
             Long userId = getUserIdFromToken(servletRequest);
             if (userId != null) {
@@ -382,27 +360,21 @@ public class SocialMediaController {
                 logger.info("匿名用户请求验证Facebook访问令牌");
             }
             
-            // 添加调试日志：打印接收到的请求体
-            logger.info("接收到的请求体: {}", requestBody);
-            logger.info("请求体大小: {}", requestBody != null ? requestBody.size() : "null");
-            if (requestBody != null) {
-                for (Map.Entry<String, String> entry : requestBody.entrySet()) {
-                    String value = entry.getValue();
-                    String maskedValue = value != null && value.length() > 10 ? 
-                        value.substring(0, 5) + "*****" + value.substring(value.length() - 5) : 
-                        (value != null ? "******" : "null");
-                    logger.info("参数 {}: {}", entry.getKey(), maskedValue);
-                }
-            }
+            // 添加调试日志：打印接收到的请求参数
+            logger.info("接收到的请求参数 - appId: {}, token前5后5位: {}", 
+                request.getAppId(), 
+                request.getToken() != null && request.getToken().length() > 10 ? 
+                    request.getToken().substring(0, 5) + "*****" + request.getToken().substring(request.getToken().length() - 5) : 
+                    "******");
             
             // 支持两种参数格式：token 或 accessToken
-            String accessToken = requestBody.get("token");
+            String accessToken = request.getToken();
             if (accessToken == null) {
-                accessToken = requestBody.get("accessToken");
+                accessToken = request.getAccessToken();
             }
             
-            String appId = requestBody.get("appId");
-            String appSecret = requestBody.get("appSecret");
+            String appId = request.getAppId();
+            String appSecret = request.getAppSecret();
             
             // 参数校验
             if (accessToken == null || accessToken.trim().isEmpty()) {
